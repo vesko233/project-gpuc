@@ -1,12 +1,18 @@
-#include<iostream>
-#include<string>
-#include<sstream>
-#include<stdlib.h>
-#include<vector>
-#include<math.h>
 #include "Matrix.h"
 
-
+// Function sets a 3D object of fixed size with random values
+std::vector<Matrix> setTestData(unsigned int numberOfLayers,
+                                              size_t number_of_rows, size_t number_of_columns)
+{
+    std::vector<Matrix> input;
+    input.reserve(numberOfLayers);
+    float range = 5.0f;
+    for (int i = 0; i < numberOfLayers; ++i){
+        Matrix mat(number_of_rows, number_of_columns, range);
+        input.push_back(mat);
+    }
+    return input;
+}
 // Function that verifies if a string is a float
 bool string_is_float(const std::string& string)
 {
@@ -67,6 +73,21 @@ Matrix::Matrix(size_t number_of_rows, size_t number_of_columns)
 	for (size_t i{ 0 }; i < number_of_rows * number_of_columns; i++) {
 		matrix_data[i] = 0;
 	}
+}
+
+Matrix::Matrix(size_t number_of_rows, size_t number_of_columns, float range)
+{
+    std::cout << "Constructing rendom matrix. \n";
+    if (number_of_rows < 0 || number_of_columns < 0) {
+        std::cerr << "The number of rows or columns cannot be a negative number!" ;
+        throw("Size is not positive!");
+    }
+    rows = number_of_rows;
+    columns = number_of_columns;
+    matrix_data = new float [number_of_rows * number_of_columns];
+    for (size_t i{ 0 }; i < number_of_rows * number_of_columns; i++) {
+        matrix_data[i] = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/range));;
+    }
 }
 
 // Copy constructor

@@ -3,6 +3,13 @@
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
+#include <random>
+#include<iostream>
+#include<string>
+#include<sstream>
+#include<stdlib.h>
+#include<vector>
+#include<math.h>
 
 // Two functions that I defined in Matrix.cpp
 bool string_is_float(const std::string& string);
@@ -22,6 +29,9 @@ public:
 
 	// Parametrized constructor
 	Matrix(size_t number_of_rows, size_t number_of_columns);
+
+    // Parametrized random constructor
+    Matrix(size_t number_of_rows, size_t number_of_columns, float range);
 
 	// Copy constructor
 	Matrix(const Matrix& some_matrix);
