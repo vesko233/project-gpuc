@@ -5,5 +5,5 @@ set(CMAKE_GXX_FLAGS "-Wall -Wextra -Wconversion  -pedantic -std=gnu11")
 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
-add_executable(main main.cpp matrix.cpp)
+add_executable(main main.cpp Matrix.cpp)
 target_link_libraries(main ${OpenCV_LIBS})

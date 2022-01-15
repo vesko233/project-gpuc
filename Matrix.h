@@ -4,12 +4,12 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 
-// Two functions that I defined in matrix.cpp
+// Two functions that I defined in Matrix.cpp
 bool string_is_float(const std::string& string);
 size_t extract_floats(std::string& some_string, std::vector < float >& vector, bool& flag, size_t& row_counter);
 
 // Class of matrices
-class matrix
+class Matrix
 {
 private:
 	size_t rows{ 0 };
@@ -18,22 +18,22 @@ private:
 
 public:
 	// Default constructor
-	matrix() = default;
+	Matrix() = default;
 
 	// Parametrized constructor
-	matrix(size_t number_of_rows, size_t number_of_columns);
+	Matrix(size_t number_of_rows, size_t number_of_columns);
 
 	// Copy constructor
-	matrix(const matrix& some_matrix);
+	Matrix(const Matrix& some_matrix);
 
 	// Copy constructor for OpenCV Mat object
-	matrix(const cv::Mat &image, const int& channel);
+	Matrix(const cv::Mat &image, const int& channel);
 
 	// Move constructor
-	matrix(matrix&& some_matrix) noexcept;
+	Matrix(Matrix&& some_matrix) noexcept;
 
 	// Destructor
-	~matrix()
+	~Matrix()
 	{
 		delete[] matrix_data;
 		std::cout << "Destructor called. Deleting matrix." << std::endl;
@@ -47,17 +47,17 @@ public:
 	void delete_row_and_column(size_t n,size_t m);
 
 	// Assignment operators
-	matrix& operator=(const matrix& some_matrix);
-	matrix& operator=(matrix&& some_matrix) noexcept;
+	Matrix& operator=(const Matrix& some_matrix);
+	Matrix& operator=(Matrix&& some_matrix) noexcept;
 
 	// Overloading the ostream and istream operators
-	friend std::ostream& operator<<(std::ostream& output_stream, const matrix& some_matrix);
-	friend std::istream& operator>>(std::istream& input_stream, matrix& some_matrix);
+	friend std::ostream& operator<<(std::ostream& output_stream, const Matrix& some_matrix);
+	friend std::istream& operator>>(std::istream& input_stream, Matrix& some_matrix);
 
 	// Overloading arithmetic operators for matrices
-	matrix operator+(const matrix& some_matrix);
-	matrix operator-(const matrix& some_matrix);
-	matrix operator*(const matrix& some_matrix);
+	Matrix operator+(const Matrix& some_matrix);
+	Matrix operator-(const Matrix& some_matrix);
+	Matrix operator*(const Matrix& some_matrix);
 
 	// Function that finds the determinant of a square matrix
 	float calculate_determinant();

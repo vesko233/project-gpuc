@@ -4,7 +4,7 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
-#include "matrix.h"
+#include "Matrix.h"
 
 // Defining ReLU activation function
 float ReLU(const float &x)

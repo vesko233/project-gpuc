@@ -4,7 +4,7 @@
 #include<stdlib.h>
 #include<vector>
 #include<math.h>
-#include "matrix.h"
+#include "Matrix.h"
 
 
 // Function that verifies if a string is a float
@@ -54,7 +54,7 @@ size_t extract_floats(std::string& some_string, std::vector < float >& vector, b
 
 // ********************************************************************************************************************
 // Parametrized constructor
-matrix::matrix(size_t number_of_rows, size_t number_of_columns)
+Matrix::Matrix(size_t number_of_rows, size_t number_of_columns)
 {
 	std::cout << "Constructing matrix. \n";
 	if (number_of_rows < 0 || number_of_columns < 0) {
@@ -70,7 +70,7 @@ matrix::matrix(size_t number_of_rows, size_t number_of_columns)
 }
 
 // Copy constructor
-matrix::matrix(const matrix& some_matrix)
+Matrix::Matrix(const Matrix& some_matrix)
 {
 	std::cout << "Copy constructor called. \n";
 	delete[] this->matrix_data; this->matrix_data = nullptr;
@@ -85,7 +85,7 @@ matrix::matrix(const matrix& some_matrix)
 }
 
 // Copy constructor for OpenCV Mat object
-matrix::matrix(const cv::Mat &image, const int& channel)
+Matrix::Matrix(const cv::Mat &image, const int& channel)
 {
 	delete[] this->matrix_data; this->matrix_data = nullptr;
 	this->rows = image.rows;  this->columns = image.cols;
@@ -101,7 +101,7 @@ matrix::matrix(const cv::Mat &image, const int& channel)
 }
 
 // Move constructor
-matrix::matrix(matrix&& some_matrix) noexcept
+Matrix::Matrix(Matrix&& some_matrix) noexcept
 {
 	std::cout << "Move constructor called. \n";
 	this->rows = some_matrix.rows;
@@ -112,19 +112,19 @@ matrix::matrix(matrix&& some_matrix) noexcept
 }
 
 // Return number of rows
-size_t matrix::get_rows() const
+size_t Matrix::get_rows() const
 {
 	return rows;
 }
 
 // Returning the number of columns
-size_t matrix::get_columns() const
+size_t Matrix::get_columns() const
 {
 	return columns;
 }
 
 // Returning the position in matrix
-size_t matrix::index(size_t n, size_t m) const
+size_t Matrix::index(size_t n, size_t m) const
 {
 	if (n > 0 && n <= rows && m > 0 && m <= columns) {
 		return (m - 1) + (n - 1)*columns;
@@ -135,7 +135,7 @@ size_t matrix::index(size_t n, size_t m) const
 }
 
 // Function that deletes the slected row and column of a matrix
-void matrix::delete_row_and_column(size_t n, size_t m)
+void Matrix::delete_row_and_column(size_t n, size_t m)
 {
 	size_t elements_deleted_from_row{ 0 };
 	size_t elements_deleted_from_column{ 0 };
@@ -174,13 +174,13 @@ void matrix::delete_row_and_column(size_t n, size_t m)
 }
 
 // Overloading the () operator for a matrix
-float& matrix::operator()(size_t n, size_t m) 
+float& Matrix::operator()(size_t n, size_t m) 
 {
 	return matrix_data[index(n, m)];
 }
 
 // Copy Assignment operator
-matrix& matrix::operator=(const matrix& some_matrix) 
+Matrix& Matrix::operator=(const Matrix& some_matrix) 
 {
 	std::cout << "Copy assignment called. \n";
 	if (&some_matrix == this) {
@@ -198,7 +198,7 @@ matrix& matrix::operator=(const matrix& some_matrix)
 }
 
 // Move Assignment operator
-matrix& matrix::operator=(matrix&& some_matrix) noexcept
+Matrix& Matrix::operator=(Matrix&& some_matrix) noexcept
 {
 	std::cout << "Move assignment called. \n";
 	std::swap(rows,some_matrix.rows);
@@ -208,7 +208,7 @@ matrix& matrix::operator=(matrix&& some_matrix) noexcept
 }
 
 // Overloading the ostream operator for matrices
-std::ostream& operator<<(std::ostream& output_stream, const matrix& some_matrix)
+std::ostream& operator<<(std::ostream& output_stream, const Matrix& some_matrix)
 {
 	if (some_matrix.rows == 0 && some_matrix.columns == 0) {
 		output_stream << "0";
@@ -225,7 +225,7 @@ std::ostream& operator<<(std::ostream& output_stream, const matrix& some_matrix)
 }
 
 // Overloading the istream operator for matrices
-std::istream& operator>>(std::istream& input_stream, matrix& some_matrix)
+std::istream& operator>>(std::istream& input_stream, Matrix& some_matrix)
 {
 	std::vector<float> extracted_matrix_data;
 	size_t columns_n{ 0 }; size_t rows_n{ 0 };
@@ -271,10 +271,10 @@ std::istream& operator>>(std::istream& input_stream, matrix& some_matrix)
 }
 
 // Overloading the + operator for matrices
-matrix matrix::operator+(const matrix& some_matrix)
+Matrix Matrix::operator+(const Matrix& some_matrix)
 {
 	if (this->rows == some_matrix.rows && this->columns == some_matrix.columns) {
-		matrix sum_matrix(some_matrix.rows,some_matrix.columns);
+		Matrix sum_matrix(some_matrix.rows,some_matrix.columns);
 		for (size_t i{ 0 }; i != some_matrix.rows * some_matrix.columns; i++) {
 			sum_matrix.matrix_data[i] = this->matrix_data[i] + some_matrix.matrix_data[i];
 		}
@@ -285,10 +285,10 @@ matrix matrix::operator+(const matrix& some_matrix)
 }
 
 // Overloading the - operator for matrices
-matrix matrix::operator-(const matrix& some_matrix)   
+Matrix Matrix::operator-(const Matrix& some_matrix)   
 {
 	if (this->rows == some_matrix.rows && this->columns == some_matrix.columns) {
-		matrix sum_matrix(some_matrix.rows, some_matrix.columns);
+		Matrix sum_matrix(some_matrix.rows, some_matrix.columns);
 		for (size_t i{ 0 }; i != some_matrix.rows * some_matrix.columns; i++) {
 			sum_matrix.matrix_data[i] = this->matrix_data[i] - some_matrix.matrix_data[i];
 		}
@@ -300,10 +300,10 @@ matrix matrix::operator-(const matrix& some_matrix)
 }
 
 // Overloading the * operator for matrices
-matrix matrix::operator*(const matrix& some_matrix)
+Matrix Matrix::operator*(const Matrix& some_matrix)
 {	
 	if (this->columns == some_matrix.rows) {
-		matrix product_matrix(this->rows,some_matrix.columns);
+		Matrix product_matrix(this->rows,some_matrix.columns);
 		for (size_t i{ 1 }; i <= product_matrix.rows; i++) {
 			for (size_t j{ 1 }; j <= product_matrix.columns; j++) {
 				for (size_t m{ 1 }; m <= some_matrix.rows; m++) {
@@ -318,7 +318,7 @@ matrix matrix::operator*(const matrix& some_matrix)
 }
 
 // Function that calculates the determinant of a square matrix
-float matrix::calculate_determinant()
+float Matrix::calculate_determinant()
 {
 	if (rows == columns) {
 		float determinant{ 0 };
@@ -326,7 +326,7 @@ float matrix::calculate_determinant()
 			determinant += matrix_data[index(1, 1)] * matrix_data[index(2, 2)] - matrix_data[index(2, 1)] * matrix_data[index(1, 2)];
 		} else {
 			for (size_t i{ 1 }; i <= columns; i++) {
-				matrix temp_matrix{ *this };
+				Matrix temp_matrix{ *this };
 				temp_matrix.delete_row_and_column(1,i);
 				determinant += pow(-1, i + 1) * matrix_data[index(1, i)] * temp_matrix.calculate_determinant();
 			}
