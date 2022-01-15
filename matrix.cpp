@@ -5,15 +5,13 @@
 #include<vector>
 #include<math.h>
 #include "matrix.h"
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui.hpp>
+
 
 // Function that verifies if a string is a float
 bool string_is_float(const std::string& string)
 {
 	char* ptr = 0;
-	float value{strtod(string.c_str(), &ptr)};
+	float value{strtof(string.c_str(), &ptr)};
 	return ptr != string.c_str() && *ptr == '\0' && value != HUGE_VAL;
 }
 
