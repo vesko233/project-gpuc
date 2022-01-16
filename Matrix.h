@@ -1,15 +1,15 @@
 #pragma once
-#include<iostream>
+#include <iostream>
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
 #include <random>
-#include<iostream>
-#include<string>
-#include<sstream>
-#include<stdlib.h>
-#include<vector>
-#include<math.h>
+#include <iostream>
+#include <string>
+#include <sstream>
+#include <cstdlib>
+#include <vector>
+#include <cmath>
 
 // Two functions that I defined in Matrix.cpp
 bool string_is_float(const std::string& string);
@@ -46,7 +46,7 @@ public:
 	~Matrix()
 	{
 		delete[] matrix_data;
-		std::cout << "Destructor called. Deleting matrix." << std::endl;
+		//std::cout << "Destructor called. Deleting matrix." << std::endl;
 	}
 
 	// Access functions
@@ -73,4 +73,5 @@ public:
 	float calculate_determinant();
 };
 
-            
+
+std::vector<Matrix> setTestData(unsigned int numberOfLayers, size_t number_of_rows, size_t number_of_columns);

@@ -1,8 +1,7 @@
 #include "Matrix.h"
 
 // Function sets a 3D object of fixed size with random values
-std::vector<Matrix> setTestData(unsigned int numberOfLayers,
-                                              size_t number_of_rows, size_t number_of_columns)
+std::vector<Matrix> setTestData(unsigned int numberOfLayers, size_t number_of_rows, size_t number_of_columns)
 {
     std::vector<Matrix> input;
     input.reserve(numberOfLayers);
@@ -13,6 +12,7 @@ std::vector<Matrix> setTestData(unsigned int numberOfLayers,
     }
     return input;
 }
+
 // Function that verifies if a string is a float
 bool string_is_float(const std::string& string)
 {
@@ -62,7 +62,7 @@ size_t extract_floats(std::string& some_string, std::vector < float >& vector, b
 // Parametrized constructor
 Matrix::Matrix(size_t number_of_rows, size_t number_of_columns)
 {
-	std::cout << "Constructing matrix. \n";
+	//std::cout << "Constructing matrix. \n";
 	if (number_of_rows < 0 || number_of_columns < 0) {
 		std::cerr << "The number of rows or columns cannot be a negative number!" ;
 		throw("Size is not positive!");
@@ -77,7 +77,7 @@ Matrix::Matrix(size_t number_of_rows, size_t number_of_columns)
 
 Matrix::Matrix(size_t number_of_rows, size_t number_of_columns, float range)
 {
-    std::cout << "Constructing rendom matrix. \n";
+    //std::cout << "Constructing random matrix. \n";
     if (number_of_rows < 0 || number_of_columns < 0) {
         std::cerr << "The number of rows or columns cannot be a negative number!" ;
         throw("Size is not positive!");
@@ -86,14 +86,15 @@ Matrix::Matrix(size_t number_of_rows, size_t number_of_columns, float range)
     columns = number_of_columns;
     matrix_data = new float [number_of_rows * number_of_columns];
     for (size_t i{ 0 }; i < number_of_rows * number_of_columns; i++) {
-        matrix_data[i] = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/range));;
+        //matrix_data[i] = static_cast <float> (rand()) / (static_cast <float> (RAND_MAX/range));
+        matrix_data[i] = i + 1.;
     }
 }
 
 // Copy constructor
 Matrix::Matrix(const Matrix& some_matrix)
 {
-	std::cout << "Copy constructor called. \n";
+	//std::cout << "Copy constructor called. \n";
 	delete[] this->matrix_data; this->matrix_data = nullptr;
 	rows = 0; columns = 0;
 	rows = some_matrix.rows; columns = some_matrix.columns;
@@ -124,7 +125,7 @@ Matrix::Matrix(const cv::Mat &image, const int& channel)
 // Move constructor
 Matrix::Matrix(Matrix&& some_matrix) noexcept
 {
-	std::cout << "Move constructor called. \n";
+	//std::cout << "Move constructor called. \n";
 	this->rows = some_matrix.rows;
 	this->columns = some_matrix.columns;
 	this->matrix_data = some_matrix.matrix_data;
@@ -155,7 +156,7 @@ size_t Matrix::index(size_t n, size_t m) const
 	}
 }
 
-// Function that deletes the slected row and column of a matrix
+// Function that deletes the selected row and column of a matrix
 void Matrix::delete_row_and_column(size_t n, size_t m)
 {
 	size_t elements_deleted_from_row{ 0 };
@@ -203,7 +204,7 @@ float& Matrix::operator()(size_t n, size_t m)
 // Copy Assignment operator
 Matrix& Matrix::operator=(const Matrix& some_matrix) 
 {
-	std::cout << "Copy assignment called. \n";
+	//std::cout << "Copy assignment called. \n";
 	if (&some_matrix == this) {
 		return *this;
 	}
