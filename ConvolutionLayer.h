@@ -7,7 +7,7 @@ class ConvolutionLayer
         std::vector<Tensor> parameters;
         size_t kernel_depth{0};
         size_t kernel_size{0};
-        size_t stride{0};
+        size_t stride{1};
         size_t number_of_kernels{0};
 
     public:
@@ -22,7 +22,7 @@ class ConvolutionLayer
         {}
 
         // Convolution between an image and a kernel
-        Tensor convolution(Tensor& image, Tensor& kernel);
+        Tensor convolution(Tensor& image, Tensor& kernel, const size_t& output_size);
 
         // Feed forward
         Tensor feedForward(Tensor& input);

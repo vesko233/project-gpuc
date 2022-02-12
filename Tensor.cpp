@@ -91,7 +91,7 @@ size_t Tensor::index(size_t n_x, size_t n_y, size_t n_z) const
 // Overloading the () operator for a tensor
 float& Tensor::operator()(size_t n_x, size_t n_y, size_t n_z) 
 {
-	return tensor_data[index(n_x, n_y,n_z)];
+	return tensor_data[index(n_x,n_y,n_z)];
 }
 
 

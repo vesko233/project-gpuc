@@ -3,8 +3,8 @@
 // Parametrized constructor for the convolution layer
 ConvolutionLayer::ConvolutionLayer(size_t some_kernel_size, size_t some_kernel_depth, size_t some_stride, size_t some_number_of_kernels)
 {
-    if (some_kernel_size < 0 || some_kernel_depth < 0 || some_number_of_kernels < 0 || some_stride < 0 ) {
-		std::cerr << "The kernel size, the number of kernels and/or the stride must be positive!" ;
+    if (some_kernel_size < 0 || some_kernel_depth < 0 || some_number_of_kernels < 0 || some_stride < 1 ) {
+		std::cerr << "The kernel size and/or the number of kernels must be positive; the stride mustn't be smaller than 1!" ;
 		throw("Negative values!");
     }
 
@@ -17,7 +17,7 @@ ConvolutionLayer::ConvolutionLayer(size_t some_kernel_size, size_t some_kernel_d
     std::default_random_engine generator;
     std::normal_distribution<float> norm_distribution(0.0,1.0);
 
-    for (int k = 0; k < some_number_of_kernels; k++){
+    for (int k = 0; k < number_of_kernels; k++){
         // Initialize kernel
         Tensor kernel(kernel_size, kernel_size, kernel_depth);
         for (int i = 0; i < kernel_size; i++){
@@ -32,55 +32,61 @@ ConvolutionLayer::ConvolutionLayer(size_t some_kernel_size, size_t some_kernel_d
 }
 
 // Method for convolving an image with a kernel
-Tensor ConvolutionLayer::convolution(Tensor& image, Tensor& kernel)
+Tensor ConvolutionLayer::convolution(Tensor& image, Tensor& kernel, const size_t& output_size)
 {
-    size_t result_size = (image.get_rows() - kernel.get_rows())/stride + 1;
-    Tensor result(result_size, result_size, 1);
+    Tensor output(output_size, output_size, 1);
 
     // Convolution
+    // iterate over all output pixels of the image
+    int image_size = image.get_rows();
     int offset = (kernel_size - 1)/2;
-    for (int i = 0; i < result_size; i++){
-        for (int j = 0; j < result_size; j++){
-            float res = 0;
-            for (int k = 1; k <= kernel_size; k + stride){
-                for (int l = 1; l <= kernel_size; l + stride){
-                    res += image(i - offset + k ,j - offset + l)*kernel(k,l);
+    for (int i = offset; i < image_size - offset; i++){
+        for (int j = offset; j < image_size - offset; j++){
+
+            // Compute convolution result for each pixel
+            int res = 0;
+            // iterate over layers
+            for (int k = 0; k < kernel.get_layers(); k++){
+                // convolution
+                for (int r = 0; r < kernel_size; r++){
+                    for (int c = 0; c < kernel_size; c++){
+                        res += kernel(r,c,k)*image(i - (kernel_size-1)/2 + r ,j - (kernel_size-1)/2 + c,k);        
+                    }
                 }
             }
-            result(i,j) = res;
+
+            // Assign convolution result
+            output(i - offset, j - offset, 0) = res;
         }
     }
-    return result;
+    return output;
 }
 
-// Feed forward function of convolution layer taking an input of size width X height X depth
-std::vector<Matrix> ConvolutionLayer::feedForward(std::vector<Matrix>& input)
+// Feed forward function of convolution layer taking an input of size 
+Tensor ConvolutionLayer::feedForward(Tensor& input)
 {
-    // For each input image,   
-    if (input.size() != kernel_depth){
-        std::cerr << "Input size of vector is not equal to the kernel depth!";
+    // Check if the image depth is the same as the kernel depth
+    if (input.get_layers() != kernel_depth){
+        std::cerr << "Input depth is not equal to the kernel depth!";
         throw("Invalid dimensions!");
     }
 
-    // Define kernel output size
-    size_t output_size = (input[0].get_rows() - kernel_size)/stride + 1;
+    size_t output_size = (input.get_rows() - kernel_size)/stride + 1;
+    Tensor layer_output(output_size, output_size, number_of_kernels);
 
-    // For each kernel, compute its convolution with the input vector
-    std::vector<Matrix> output;
+    // Iterating through all kernels 
+    for (int nk = 0; nk < number_of_kernels; nk++){
 
-    for (int i = 0; i < number_of_kernels; i++){
-        std::vector<Matrix> kernel = parameters[i];
+        // 2D output of a single convolution; parameters[nk] is each kernel in the vector of kernels
+        Tensor single_output = convolution(input, parameters[nk], output_size);
 
-        Matrix kernel_output(output_size, output_size);
-        
-        // 2D convolve
-        for (int j = 0; j < kernel_depth; j++){
-            kernel_output = kernel_output + convolution(input[j], kernel[j]);
+        // Copy output of the convolution to the layer output
+        for (int i = 0; i < output_size; i++){
+            for (int j = 0; j < output_size; j++){
+                layer_output(i,j,nk) = single_output(i,j,0);
+            }
         }
-
-        // Add kernel output to output vector
-        output.push_back(kernel_output);
     }
-    return output;
+    return layer_output;
 }
 
