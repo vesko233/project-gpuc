@@ -1,11 +1,13 @@
-#pragma once
-#include<iostream>
-#include<string>
-#include<sstream>
+#ifndef GPU_PROJECT_TENSOR_H
+#define GPU_PROJECT_TENSOR_H
+
+#include <iostream>
+#include <string>
+#include <sstream>
 #include <random>
-#include<stdlib.h>
-#include<vector>
-#include<math.h>
+#include <cstdlib>
+#include <vector>
+#include <cmath>
 #include <opencv2/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp>
@@ -51,4 +53,9 @@ class Tensor
     // Assignment operators
 	Tensor& operator=(const Tensor& some_tensor);
 	Tensor& operator=(Tensor&& some_tensor) noexcept;
+
+    // Overloading the ostream and istream operators
+    friend std::ostream& operator<<(std::ostream& output_stream, const Tensor& some_Tensor);
 };
+
+#endif //GPU_PROJECT_TENSOR_H

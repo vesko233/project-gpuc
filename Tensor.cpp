@@ -84,6 +84,7 @@ size_t Tensor::index(size_t n_x, size_t n_y, size_t n_z) const
         return n_x + n_y*rows + n_z*rows*cols;
 	} else {
 		std::cerr << "Element out of range! \n";
+        std::cerr << "At position: n_x = " << n_x << ", n_y = " << n_y << ", n_z = " << n_z << std::endl;
 		exit(1);
 	}
 }
@@ -121,4 +122,23 @@ Tensor& Tensor::operator=(Tensor&& some_tensor) noexcept
 	std::swap(size, some_tensor.size);
     std::swap(tensor_data, some_tensor.tensor_data);
 	return *this;
+}
+
+std::ostream &operator<<(std::ostream &output_stream, const Tensor &some_Tensor)
+{
+        if (some_Tensor.rows == 0 && some_Tensor.cols == 0) {
+            output_stream << "0";
+        } else {
+            for (size_t k{0}; k < some_Tensor.layers; k++) {
+                output_stream << "Layer number : " << k << std::endl;
+                for (size_t n{0}; n < some_Tensor.rows; n++) {
+                    for (size_t m{0}; m < some_Tensor.cols; m++) {
+                        size_t i{some_Tensor.index(n, m, k)};
+                        output_stream << some_Tensor.tensor_data[i] << "  ";
+                    }
+                    output_stream << "\n";
+                }
+            }
+        }
+        return output_stream;
 }
