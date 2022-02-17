@@ -48,14 +48,18 @@ class Tensor
 	size_t get_cols() const;
     size_t get_layers() const;
 	size_t index(size_t n_x, size_t n_y, size_t n_z) const;
-	float& operator()(size_t n_x, size_t n_y, size_t n_z);
+	float& operator()(size_t n_x, size_t n_y, size_t n_z = 0);
 
     // Assignment operators
 	Tensor& operator=(const Tensor& some_tensor);
 	Tensor& operator=(Tensor&& some_tensor) noexcept;
 
-    // Overloading the ostream and istream operators
+    // Overloading the ostream operator
     friend std::ostream& operator<<(std::ostream& output_stream, const Tensor& some_Tensor);
+
+	// Arithmetic operators and functions
+	Tensor operator*(const Tensor& some_tensor);
+	Tensor hadamard(const Tensor& some_tensor);
 };
 
 #endif //GPU_PROJECT_TENSOR_H

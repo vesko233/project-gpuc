@@ -124,6 +124,7 @@ Tensor& Tensor::operator=(Tensor&& some_tensor) noexcept
 	return *this;
 }
 
+// Overloading the ostream operator
 std::ostream &operator<<(std::ostream &output_stream, const Tensor &some_Tensor)
 {
         if (some_Tensor.rows == 0 && some_Tensor.cols == 0) {
@@ -141,4 +142,44 @@ std::ostream &operator<<(std::ostream &output_stream, const Tensor &some_Tensor)
             }
         }
         return output_stream;
+}
+
+// Multiplication operator. Works only for tensors with 1 layer, i.e. matrices. It essentially performs matrix multiplication.
+Tensor Tensor::operator*(const Tensor& some_tensor)
+{
+	if (this->layers != 1 || some_tensor.layers != 1){
+		std::cerr << "Tensor multiplication is overloaded only for 2D tensors, i.e. for tensors with only 1 layer";
+		throw("Invalid tensor size!");
+	}
+	if (this->cols == some_tensor.rows) {
+		Tensor product_tensor(this->rows,some_tensor.cols,1);
+		for (int i = 0; i < product_tensor.rows; i++) {
+			for (int j = 0; j < product_tensor.cols; j++) {
+				for (int m = 0; m < some_tensor.rows; m++) {
+					product_tensor(i, j) += this->tensor_data[index(i,m,0)]*some_tensor.tensor_data[index(m,j,0)];
+				}	
+			}
+		}
+		return product_tensor;
+	} else {
+		throw std::runtime_error("The number of columns of the first tensor must be equal to the number of rows of the second one!");
+	}
+}
+
+// Hadamard product between two tensors
+Tensor Tensor::hadamard(const Tensor& some_tensor)
+{
+	if (this->rows != some_tensor.rows || this->cols != some_tensor.cols || this->layers != some_tensor.layers){
+		std::cerr << "Hadamard product can only be performed on tensors with the same dimensions!";
+		throw("Invalid dimensions!");
+	}
+	Tensor hadamard_tensor(this->rows, this->cols, this->layers);
+	for (int i = 0; i < this->rows; i++){
+		for (int j = 0; j < this->cols; j++){
+			for (int k = 0; k < this->layers; k++){
+				hadamard_tensor(i,j,k) = this->tensor_data[index(i,j,k)]*some_tensor.tensor_data[index(i,j,k)];
+			}	
+		}
+	}
+	return hadamard_tensor;
 }
