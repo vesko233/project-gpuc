@@ -1,16 +1,15 @@
-#ifndef GPU_PROJECT_TENSOR_H
-#define GPU_PROJECT_TENSOR_H
-
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <random>
-#include <cstdlib>
-#include <vector>
-#include <cmath>
-#include <opencv2/core.hpp>
-#include <opencv2/imgcodecs.hpp>
-#include <opencv2/highgui.hpp>
+#pragma once
+#include<iostream>
+#include<string>
+#include<sstream>
+#include<random>
+#include<stdlib.h>
+#include<vector>
+#include<array>
+#include<math.h>
+#include<opencv2/core.hpp>
+#include<opencv2/imgcodecs.hpp>
+#include<opencv2/highgui.hpp>
 
 class Tensor
 {
@@ -60,6 +59,5 @@ class Tensor
 	// Arithmetic operators and functions
 	Tensor operator*(const Tensor& some_tensor);
 	Tensor hadamard(const Tensor& some_tensor);
+	Tensor transpose();
 };
-
-#endif //GPU_PROJECT_TENSOR_H

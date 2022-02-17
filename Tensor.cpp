@@ -80,11 +80,10 @@ size_t Tensor::get_layers() const
 // Returning the position in Tensor
 size_t Tensor::index(size_t n_x, size_t n_y, size_t n_z) const
 {
-	if (n_x >= 0 && n_x <= rows && n_y >= 0 && n_y <= cols && n_z >= 0 && n_z <= layers) {
+	if (n_x >= 0 && n_x < rows && n_y >= 0 && n_y < cols && n_z >= 0 && n_z < layers) {
         return n_x + n_y*rows + n_z*rows*cols;
 	} else {
 		std::cerr << "Element out of range! \n";
-        std::cerr << "At position: n_x = " << n_x << ", n_y = " << n_y << ", n_z = " << n_z << std::endl;
 		exit(1);
 	}
 }
@@ -183,3 +182,20 @@ Tensor Tensor::hadamard(const Tensor& some_tensor)
 	}
 	return hadamard_tensor;
 }
+
+// Transpose of a tensor. Works only for 2D tensors, i.e. matrices
+Tensor Tensor::transpose()
+{
+	if (layers != 1){
+		std::cerr << "The transpose method works only for 2D tensors!";
+		throw("Invalid dimension");
+	}
+	Tensor transposed_tensor(this->cols, this->rows, this->layers);
+	// Exchange rows and columns
+	for (int i = 0; i < this->cols; i++){
+		for (int j = 0; j < this->rows; j++){
+			transposed_tensor(i,j) = this->tensor_data[index(j,i,0)];
+		}
+	}
+	return transposed_tensor;
+} 

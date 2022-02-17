@@ -2,12 +2,11 @@
 
 class FullyConnectedLayer
 {
-    private:
+    public:
         Tensor weights;
         float* biases{nullptr};
         std::string activation{""};
 
-    public:
         // Default constructor
         FullyConnectedLayer() = default;
 
@@ -21,9 +20,9 @@ class FullyConnectedLayer
         }
 
         // Feedforward
-        float* feedForward(float* input_data, size_t input_data_size);
-        float* activate(float* z);
+        float* feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size);
+        float* activate(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size);
 
         // Backpropagation
-        float* backpropagation(float* input_data, float learning_rate, float* next_layer_error, float* z);
+        float* backpropagation(float* delta_next, float* delta_this, const float& learning_rate, Tensor& w_next, float* z_this, float* a_prev);
 };

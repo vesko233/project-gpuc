@@ -11,9 +11,9 @@ FullyConnectedLayer::FullyConnectedLayer(size_t number_of_neurons, size_t previo
         throw("Invalid activation function");
     }
 
-    // Initialize random weights from a Gaussian distribution with mean = 0 and stdev = 1
+    // Initialize random weights from a Gaussian distribution with mean = 0 and stdev = 0.1
     std::default_random_engine generator;
-    std::normal_distribution<float> norm_distribution(0.0,1.0);
+    std::normal_distribution<float> norm_distribution(0.0,0.1);
 
     Tensor some_weights(number_of_neurons, previous_layer_dimension, 1);
     weights = some_weights;
@@ -21,7 +21,7 @@ FullyConnectedLayer::FullyConnectedLayer(size_t number_of_neurons, size_t previo
     for (int i = 0; i < weights.get_rows(); i++){
         biases[i] = norm_distribution(generator);
         for (int j = 0; j < weights.get_cols(); j++){
-            weights(i,j,0) = norm_distribution(generator);
+            weights(i,j) = norm_distribution(generator);
         }
     }
 
@@ -29,69 +29,87 @@ FullyConnectedLayer::FullyConnectedLayer(size_t number_of_neurons, size_t previo
     activation = some_activation;
 }
 
+
 // Feed forward data through layer
-float* FullyConnectedLayer::feedForward(float* input_data, size_t input_data_size)
+// Input data is a^(l-1), output data is z^l
+// Input data should have size = weights.cols !
+// Output data should have size = weights.rows !
+float* FullyConnectedLayer::feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size)
 {
     if (input_data_size != weights.get_cols()){
         std::cerr << "Input size of the layer must be equal to the initialized size!";
         throw("Invalid input size");
     }
-
-    // Multiplying input by wrights and adding bias
-    float layer_output[weights.get_rows()];
-    for (int i = 0; i < weights.get_rows(); i ++){
-        float res = 0;
-        for (int j = 0; j < input_data_size; j++){
-            res += weights(i,j,0)*input_data[j];
-        }
-        res += biases[i];
-        layer_output[i] = res;
+    if (output_data_size != weights.get_rows()){
+        std::cerr << "Output size of the layer must be equal to the initialized size!";
+        throw("Invalid output size");
     }
 
-    return layer_output;
+    // Multiplying input by weights and adding biases
+    for (int i = 0; i < weights.get_rows(); i++){
+        float temp = 0;
+        for (int j = 0; j < weights.get_cols(); j++){
+            temp += weights(i,j)*input_data[j];
+        }
+        output_data[i] = temp + biases[i];
+    }
+    return output_data;
 }
 
 // Activation function on layer output
-float* FullyConnectedLayer::activate(float* z)
+// input data is z^l, output data is a^l
+float* FullyConnectedLayer::activate(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size)
 {
-    float activate_output[weights.get_rows()];
-    for (int i = 0; i < weights.get_rows(); i++){
-        if (activation == "None"){
-            activate_output[i] = z[i];
-        } else if (activation == "ReLu"){
-            activate_output[i] = std::max(z[i],0.0f);
-        }
+    if (input_data_size != output_data_size){
+        std::cerr << "Activation function dimensions do not match!";
+        throw("Invalid dimensions!");
     }
-    return activate_output;
+
+    // Activating input accorfing to specified activation function
+    for (int i = 0; i < output_data_size; i++){
+        if (activation == "None"){
+            output_data[i] = input_data[i];
+        } else if (activation == "ReLu"){
+            output_data[i] = std::max(input_data[i],0.0f);
+        }        
+    }
+    return output_data;
 }
 
-// Backpropagation of layer
-float* FullyConnectedLayer::backpropagation(float* input_data, float learning_rate, float* next_layer_error, float* z)
+// Backpropagation of layer 
+// This method computes this layer's error to be propagated backwards
+// Delta_next is the error of the next layer and should have size = number of neurons in next layer ( = delta^l)
+// Delta_this is the error of this layer and should have size = number of neurons in this layer ( = delta^(l+1))
+// a_prev is the activation of the previous layer and should have size = weights.cols ( = a^(l-1))
+// z_this is the non activated output of this layer and should have size = number of neurons in this layer ( = z^l) 
+// w_next are the weights of the next layer and shoulf have size = number of neurons in next layer X number of neurons in this layer ( = w^(l+1))
+float* FullyConnectedLayer::backpropagation(float* delta_next, float* delta_this, const float& learning_rate, Tensor& w_next, float* z_this, float* a_prev)
 {
-    float output_error[weights.get_cols()];
-
     // Computing error of this layer
-    // iterate through number of neurons in previous layer (weights transpose)
-    for (int i = 0; i < weights.get_cols(); i++){
-        float res = 0;
-        for (int j = 0; j < weights.get_rows(); j++){
-            res += weights(j,i,0)*next_layer_error[j];
+    for (int i = 0; i < weights.get_rows(); i++){
+        // Performing scalar product between columns of net layer weights and next layer error
+        float temp = 0;
+        for (int j = 0; j < w_next.get_rows(); j++){
+            temp += w_next(j,i)*delta_next[j];
         }
 
+        // Multiplying by derivative of activation function
         if (activation == "None"){
-            output_error[i] = res;
+            delta_this[i] = temp;
+
+        // ReLu derivative is the heaviside function
         } else if (activation == "ReLu"){
-            (z[i] < 0.0f) ? output_error[i] = 0.0f : output_error[i] = res;
+            (z_this[i] < 0.0f) ? delta_this[i] = 0.0f : delta_this[i] = temp;
         }
     }
 
-    // Apply gradient descent to weights and biases
+    // Apply gradient descent update rule for weights and biases based on the computed error
     for (int i = 0; i < weights.get_rows(); i ++){
-        biases[i] -= learning_rate*output_error[i];
+        biases[i] -= learning_rate*delta_this[i];
         for (int j = 0; j < weights.get_cols(); j++){
-            weights(i,j,0) -= learning_rate*output_error[i]*input_data[j];
+            weights(i,j) -= learning_rate*delta_this[i]*a_prev[j];
         }
     }
 
-    return output_error;
+    return delta_this;
 }
