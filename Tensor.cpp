@@ -84,6 +84,7 @@ size_t Tensor::index(size_t n_x, size_t n_y, size_t n_z) const
         return n_x + n_y*rows + n_z*rows*cols;
 	} else {
 		std::cerr << "Element out of range! \n";
+		std::cerr << "At position: n_x = " << n_x << ", n_y = " << n_y << ", n_z = " << n_z << std::endl;
 		exit(1);
 	}
 }
