@@ -4,36 +4,42 @@
 #include <iostream>
 #include <algorithm>
 #include <vector>
-#include "Matrix.h"
+#include "Tensor.h"
+#include "ConvolutionLayer.h"
+#include "PoolingLayer.h"
+#include "FullyConnectedLayer.h"
+#include "SoftmaxLayer.h"
 
-// Defining ReLU activation function
-float ReLU(const float &x)
-{
-    return std::max(x,0.0f);
-}
-
-// // Convert image matrix to std::vector 3D array
-// std::vector<std::vector<std::vector<float>>> MatToArray(const cv::Mat &image)
-// {   
-//     // Extracting image matrix to 1D array
-//     uchar* image_1D_array = image.isContinuous() ? image.data : image.clone().data ;
-
-//     // Reshaping the flat array to a 3D matrix of floats
-//     std::vector<std::vector<std::vector<float>>> image_3D_array(image.rows, std::vector<std::vector<float>>(image.cols, std::vector<float>(image.channels())));
-//     for (int i = 0; i < image.rows; i ++){
-//         for (int j = 0; j < image.cols; j++){
-//             for (int k = 0; k < image.channels(); k++){
-//                 image_3D_array[i][j][k] = (float)image_1D_array[(i*image.cols + j)*image.channels() + k]/255.;
-//             }
-//         }
-//     }
-//     return image_3D_array;
-// }
 
 int main()
 {
-    std::string image_path = "../../cifar-10/images_batch_1/airbus_s_000662.png";
+    std::string image_path = "../python/images_batch_1/airbus_s_000662.png";
     cv::Mat img = cv::imread(image_path, cv::IMREAD_COLOR);
+    Tensor imgTensor = Tensor(img);
+    ConvolutionLayer ConLayer1;
+    PoolingLayer PolLayer;
+    ConvolutionLayer ConLayer2;
+    FullyConnectedLayer FCLayer;
+    SoftmaxLayer SMLayer;
+
+    ConLayer1 = ConvolutionLayer(5, 3, 1, 10);
+    Tensor Conv1 = ConLayer1.feedForward(imgTensor);
+
+    PolLayer = PoolingLayer(Conv1, 2, 2);
+    PolLayer.feedForward();
+
+    ConLayer2 = ConvolutionLayer(5, 10, 1, 10);
+    Tensor Conv2 = ConLayer2.feedForward(PolLayer.outputLayers);
+
+    float* aaa = new float[10];
+    float* bbb = new float[10];
+    unsigned int size = Conv2.get_rows()*Conv2.get_cols()*Conv2.get_layers();
+
+    FCLayer = FullyConnectedLayer(10, size, "ReLu");
+    FCLayer.feedForward(Conv2.flatten(), aaa, size ,10);
+
+    SMLayer = SoftmaxLayer(10, 10);
+    SMLayer.feedForward(aaa, bbb, 10, 10);
 
     return 0;
 }
