@@ -11,7 +11,7 @@ class FullyConnectedLayer
         FullyConnectedLayer() = default;
 
         // Parametrized constructor;
-        FullyConnectedLayer(size_t number_of_neurons, size_t previous_layer_dimension ,std::string some_activation);
+        FullyConnectedLayer(size_t number_of_neurons, size_t previous_layer_dimension , const std::string& some_activation, const std::string& filename);
 
         // Destructor
         ~FullyConnectedLayer()

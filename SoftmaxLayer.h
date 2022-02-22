@@ -10,7 +10,7 @@ class SoftmaxLayer
         SoftmaxLayer() = default;
 
         // Parametrized constructor;
-        SoftmaxLayer(size_t number_of_neurons, size_t previous_layer_dimension);
+        SoftmaxLayer(size_t number_of_neurons, size_t previous_layer_dimension, const std::string& filename);
 
         // Destructor
         ~SoftmaxLayer()
