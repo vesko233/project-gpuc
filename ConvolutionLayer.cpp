@@ -1,33 +1,131 @@
 #include "ConvolutionLayer.h"
 
 // Parametrized constructor for the convolution layer
-ConvolutionLayer::ConvolutionLayer(size_t some_kernel_size, size_t some_kernel_depth, size_t some_stride, size_t some_number_of_kernels)
+ConvolutionLayer::ConvolutionLayer(size_t some_kernel_size, size_t some_kernel_depth, size_t some_stride, size_t some_number_of_kernels, const std::string& some_activation, const std::string& filename)
 {
     if (some_kernel_size < 0 || some_kernel_depth < 0 || some_number_of_kernels < 0 || some_stride < 1 ) {
 		std::cerr << "The kernel size and/or the number of kernels must be positive; the stride mustn't be smaller than 1!" ;
 		throw("Negative values!");
     }
+    
+    if (some_activation != "None" && some_activation != "ReLu"){
+        std::cerr << "Activation function does not exist!";
+        throw("Invalid input!");
+    }
 
+    activation = some_activation;
     kernel_size = some_kernel_size;
     kernel_depth = some_kernel_depth;
     stride = some_stride;
     number_of_kernels = some_number_of_kernels;
 
-    // Initialize kernels with values drawn from a normal distribution with mean = 0 and stdev = 1
-    std::default_random_engine generator;
-    std::normal_distribution<float> norm_distribution(0.0,1.0);
+    std::ifstream weight_file(filename.c_str());
+    if (weight_file.is_open()){
+        // Getting entire string of file
+        std::string entire_string;
+        std::getline(weight_file,entire_string,'=');
 
-    for (int k = 0; k < number_of_kernels; k++){
-        // Initialize kernel
-        Tensor kernel(kernel_size, kernel_size, kernel_depth);
+        //
+        // Splitting string into two sections, one for weights and another for biases
+        std::string delimiter = "%"; size_t delim_pos = entire_string.find(delimiter);
+
+        // Extract weight string and erase it
+        std::string weight_string = entire_string.substr(0,delim_pos);
+        entire_string.erase(0,delim_pos+delimiter.length());
+
+        // Find new position of delimiter and extract bias string
+        delim_pos = entire_string.find(delimiter);
+        std::string bias_string = entire_string.substr(0,delim_pos);
+        //
+
+        // 
+        // Extracting weights
+        // Initialize vector of Tensors
+        for (int i = 0; i < number_of_kernels; i++){
+            Tensor temp_tensor(kernel_size,kernel_size,kernel_depth);
+            parameters.push_back(temp_tensor);
+        }
+        weight_string.erase(0,1);
+
+        // declaring container variables
+        std::string i_string; std::string j_string; std::string k_string;
+        size_t begin_pos; size_t end_pos;
+        size_t pos = 0; std::string delim = " "; std::string elem;
+
+        // rows
         for (int i = 0; i < kernel_size; i++){
+            // extracting row vals and erasing part of weight_string
+            delim = "]]]";
+            pos = weight_string.find(delim);
+            i_string = weight_string.substr(0,pos + delim.length());
+            weight_string.erase(0, pos + delim.length());
+
+            // extracting row string
+            begin_pos = i_string.find("[[[");
+            i_string = i_string.substr(begin_pos + 1, i_string.find("]]]") - begin_pos + 1);
+
+            // cols
             for (int j = 0; j < kernel_size; j++){
-                for (int k = 0; k < some_kernel_depth; k++){
-                    kernel(i,j,k) = norm_distribution(generator);
+                // extracting col vals and erasing part of i_string
+                delim = "]]";
+                pos = i_string.find(delim);
+                j_string = i_string.substr(0,pos + delim.length());
+                i_string.erase(0,pos + delim.length());
+
+                // extracting col string
+                begin_pos = j_string.find("[["); 
+                j_string = j_string.substr(begin_pos + 1, j_string.find("]]") - begin_pos);
+
+
+                // layers
+                for (int k = 0; k < kernel_depth; k++){
+                    // extracting layer vals and erasing part of j_string
+                    delim = "]";
+                    pos = j_string.find(delim);
+                    k_string = j_string.substr(0,pos + delim.length());
+                    j_string.erase(0,pos + delim.length());
+
+                    // extracting layer string
+                    begin_pos = k_string.find("[");
+                    end_pos = k_string.find("]");
+                    k_string.replace(end_pos, 1, " ");
+                    k_string = k_string.substr(begin_pos + 1, end_pos - begin_pos);
+                    k_string.replace(k_string.find("\n"),6," ");             
+       
+                    delim = " ";
+                    // number of kernel
+                    for (int l = 0; l < number_of_kernels; l++){
+                        pos = k_string.find(delim);
+                        elem = k_string.substr(0,pos);
+                        std::string::size_type sz;
+                        float elem_f = std::stof(elem, &sz);
+                        k_string.erase(0, pos + delim.length());
+                        parameters[l](i,j,k) = elem_f;
+                    }
+                    std::cout << std::endl;
                 }
             }
         }
-        parameters.push_back(kernel);
+        // 
+
+        //
+        // Extracting biases
+        begin_pos = bias_string.find('['); 
+        end_pos = bias_string.find(']');
+        bias_string.replace(end_pos, 1, " ");
+        bias_string = bias_string.substr(begin_pos + 1, end_pos - begin_pos);
+
+        biases = new float[number_of_kernels];
+        delim = " "; pos = 0;
+        for (int i = 0; i < number_of_kernels; i++){
+            pos = bias_string.find(delim);
+            elem = bias_string.substr(0,pos);
+            std::string::size_type sz;
+            float elem_f = std::stof(elem, &sz);
+            bias_string.erase(0, pos + delim.length());
+            biases[i] = elem_f;
+        }
+        //
     }
 }
 
@@ -35,28 +133,27 @@ ConvolutionLayer::ConvolutionLayer(size_t some_kernel_size, size_t some_kernel_d
 Tensor ConvolutionLayer::convolution(Tensor& image, Tensor& kernel, const size_t& output_size)
 {
     Tensor output(output_size, output_size, 1);
-
     // Convolution
     // iterate over all output pixels of the image
     int image_size = image.get_rows();
     int offset = (kernel_size - 1)/2;
-    for (int i = offset; i < image_size - offset; i++){
-        for (int j = offset; j < image_size - offset; j++){
+    for (int x = 0; x < output_size; x++){
+        for (int y = 0; y < output_size; y++){
 
             // Compute convolution result for each pixel
             int res = 0;
             // iterate over layers
             for (int k = 0; k < kernel.get_layers(); k++){
-                // convolution
-                for (int r = 0; r < kernel_size; r++){
-                    for (int c = 0; c < kernel_size; c++){
-                        res += kernel(r,c,k)*image(i - (kernel_size-1)/2 + r ,j - (kernel_size-1)/2 + c,k);        
+                // 2D convolution for each layer
+                for (int i = 0; i < kernel_size; i++){
+                    for (int j = 0; j < kernel_size; j++){
+                        res += kernel(i,j,k)*image(x + i,y + j,k);        
                     }
                 }
             }
 
             // Assign convolution result
-            output(i - offset, j - offset, 0) = res;
+            output(x,y) = res;
         }
     }
     return output;
@@ -80,10 +177,15 @@ Tensor ConvolutionLayer::feedForward(Tensor& input)
         // 2D output of a single convolution; parameters[nk] is each kernel in the vector of kernels
         Tensor single_output = convolution(input, parameters[nk], output_size);
 
-        // Copy output of the convolution to the layer output
+        // Apply activation function to output of the convolution to create the layer output
         for (int i = 0; i < output_size; i++){
             for (int j = 0; j < output_size; j++){
-                layer_output(i,j,nk) = single_output(i,j,0);
+
+                if (activation == "None"){
+                    layer_output(i,j,nk) = single_output(i,j,0);
+                } else if (activation == "ReLu"){
+                    layer_output(i,j,nk) = std::max(single_output(i,j,0),0.0f);
+                }
             }
         }
     }
