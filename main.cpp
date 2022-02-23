@@ -14,36 +14,6 @@
 
 int main()
 {
-
-    // ConvolutionLayer ConLayer1;
-    // PoolingLayer PolLayer;
-    // ConvolutionLayer ConLayer2;
-    // FullyConnectedLayer FCLayer;
-    // SoftmaxLayer SMLayer;
-
-    // ConLayer1 = ConvolutionLayer(5, 3, 1, 10);
-    // Tensor Conv1 = ConLayer1.feedForward(imgTensor);
-
-    // PolLayer = PoolingLayer(Conv1, 2, 2);
-    // PolLayer.feedForward();
-
-    // ConLayer2 = ConvolutionLayer(5, 10, 1, 10);
-    // Tensor Conv2 = ConLayer2.feedForward(PolLayer.outputLayers);
-
-    // float* aaa = new float[10];
-    // float* bbb = new float[10];
-    // unsigned int size = Conv2.get_rows()*Conv2.get_cols()*Conv2.get_layers();
-
-    // FCLayer = FullyConnectedLayer(10, size, "ReLu");
-    // FCLayer.feedForward(Conv2.flatten(), aaa, size ,10);
-
-    // SMLayer = SoftmaxLayer(10, 10);
-    // SMLayer.feedForward(aaa, bbb, 10, 10);
-
-    // return 0;
-
-    ///////////////////////////////////////////////////
-
     // Defining architecture
     ConvolutionLayer convLayer1(3,3,1,16,"ReLu","../cnn-weights/cnn-weights-conv2d.txt"); 
     std::cout << "hey1" << std::endl;
@@ -166,40 +136,48 @@ int main()
     delete[] softamx_layer_output;
 }
 
+
+
+
+
+
+
+    // ConvolutionLayer ConLayer1;
+    // PoolingLayer PolLayer;
+    // ConvolutionLayer ConLayer2;
+    // FullyConnectedLayer FCLayer;
+    // SoftmaxLayer SMLayer;
+
+    // ConLayer1 = ConvolutionLayer(5, 3, 1, 10);
+    // Tensor Conv1 = ConLayer1.feedForward(imgTensor);
+
+    // PolLayer = PoolingLayer(Conv1, 2, 2);
+    // PolLayer.feedForward();
+
+    // ConLayer2 = ConvolutionLayer(5, 10, 1, 10);
+    // Tensor Conv2 = ConLayer2.feedForward(PolLayer.outputLayers);
+
+    // float* aaa = new float[10];
+    // float* bbb = new float[10];
+    // unsigned int size = Conv2.get_rows()*Conv2.get_cols()*Conv2.get_layers();
+
+    // FCLayer = FullyConnectedLayer(10, size, "ReLu");
+    // FCLayer.feedForward(Conv2.flatten(), aaa, size ,10);
+
+    // SMLayer = SoftmaxLayer(10, 10);
+    // SMLayer.feedForward(aaa, bbb, 10, 10);
+
+    // return 0;
+
+    ///////////////////////////////////////////////////
+
+
+
+
+
+
+
     // // Getting a test image
     // std::string image_path = "../../cifar-10/images_batch_2/american_elk_s_000918.png";
     // cv::Mat img = cv::imread(image_path, cv::IMREAD_COLOR);
     // Tensor test_img = Tensor(img);
-
-    // // pass to 1st conv layer
-    // Tensor output = convLayer1.feedForward(test_img);
-    
-    // // pass to 2nd conv layer
-    // output = convLayer2.feedForward(output);
-
-    // // pass to maxpool layer
-    // output = poolLayer.feedForward(output);
-
-    // // Flatten output
-    // float* output_flat = new float[6272];
-    // output_flat = output.flatten(output_flat,6272);
-
-    // // pass to dense fully connected layer
-    // float* dense_layer_output = new float[256];
-    // dense_layer_output = denseLayer.feedForward(output_flat,dense_layer_output,6272,256);
-
-    // // pass to softmax layer
-    // float* softamx_layer_output = new float[10];
-    // softamx_layer_output = denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10);
-
-    // for (int i = 0; i < 10; i++){
-    //     std::cout << softamx_layer_output[i] << " ";
-    // }
-
-
-    // std::cout << std::endl;
-
-    // // Freeing memory
-    // delete[] output_flat;
-    // delete[] dense_layer_output;
-    // delete[] softamx_layer_output;
