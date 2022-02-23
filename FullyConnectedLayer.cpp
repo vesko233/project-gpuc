@@ -93,11 +93,13 @@ FullyConnectedLayer::FullyConnectedLayer(size_t number_of_neurons, size_t previo
         }
     }
 
-    std::cout << weights << std::endl;
-    for (int i = 0; i < number_of_neurons; i++){
-        std::cout << biases[i] << "; ";
-    }
-    std::cout << std::endl;
+    // std::cout << weights << std::endl;
+    // for (int i = 0; i < number_of_neurons; i++){
+    //     std::cout << biases[i] << "; ";
+    // }
+    // std::cout << std::endl;
+
+    
     // Activation function
     activation = some_activation;
 }

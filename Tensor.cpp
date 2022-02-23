@@ -59,6 +59,24 @@ Tensor::Tensor(Tensor&& some_tensor) noexcept
     some_tensor.tensor_data = nullptr;
 }
 
+// Parametrized constructor, taking data from an array
+Tensor::Tensor(float* image, size_t number_of_rows, size_t number_of_columns, size_t number_of_layers)
+{
+	if (number_of_rows < 0 || number_of_columns < 0 || number_of_layers < 0) {
+		std::cerr << "The number of rows, columns or layers cannot be a negative number!" ;
+		throw("Size is not positive!");
+    }
+    rows = number_of_rows;
+    cols = number_of_columns;
+    layers = number_of_layers;
+    size = number_of_rows*number_of_columns*number_of_layers;
+	tensor_data = new float [size];	
+	for (size_t i = 0; i < size; i++) {
+		tensor_data[i] = image[i]/255.;
+	}    
+}
+
+
 // Return number of rows
 size_t Tensor::get_rows() const
 {
@@ -200,3 +218,16 @@ Tensor Tensor::transpose()
 	}
 	return transposed_tensor;
 } 
+
+// Flatten tensor(Return tensor data)
+float* Tensor::flatten(float* flat, const size_t& flat_size)
+{
+	if (flat_size != size){
+		std::cerr << "Output array for flattened tensor is different than size of Tensor data!";
+		throw("Invalid input!");
+	}
+	for (int i = 0; i < flat_size; i++){
+		flat[i] = tensor_data[i];
+	}
+	return flat;
+}

@@ -6,6 +6,10 @@
 #include<stdlib.h>
 #include<vector>
 #include<array>
+#include<fstream>
+#include<cstdlib>
+#include<iterator>
+#include<algorithm>
 #include<math.h>
 #include<opencv2/core.hpp>
 #include<opencv2/imgcodecs.hpp>
@@ -32,6 +36,9 @@ class Tensor
 
 	// Copy constructor for OpenCV Mat object
 	Tensor(const cv::Mat &image);
+
+	// Parametrized constructor taking an array of values
+	Tensor(float* image, size_t number_of_rows, size_t number_of_columns, size_t number_of_layers);
 
 	// Move constructor
 	Tensor(Tensor&& some_tensor) noexcept;
@@ -60,4 +67,5 @@ class Tensor
 	Tensor operator*(const Tensor& some_tensor);
 	Tensor hadamard(const Tensor& some_tensor);
 	Tensor transpose();
+	float* flatten(float* flat, const size_t& flat_size);
 };

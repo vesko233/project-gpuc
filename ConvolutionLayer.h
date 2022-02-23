@@ -6,7 +6,6 @@ class ConvolutionLayer
         // Parameter 
         std::vector<Tensor> parameters;
         float* biases;
-
         size_t kernel_depth{0};
         size_t kernel_size{0};
         size_t stride{1};
@@ -31,7 +30,4 @@ class ConvolutionLayer
 
         // Feed forward
         Tensor feedForward(Tensor& input);
-
-        // Backpropagation
-//         backpropagation();
 };

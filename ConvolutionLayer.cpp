@@ -76,7 +76,6 @@ ConvolutionLayer::ConvolutionLayer(size_t some_kernel_size, size_t some_kernel_d
                 begin_pos = j_string.find("[["); 
                 j_string = j_string.substr(begin_pos + 1, j_string.find("]]") - begin_pos);
 
-
                 // layers
                 for (int k = 0; k < kernel_depth; k++){
                     // extracting layer vals and erasing part of j_string
@@ -88,10 +87,28 @@ ConvolutionLayer::ConvolutionLayer(size_t some_kernel_size, size_t some_kernel_d
                     // extracting layer string
                     begin_pos = k_string.find("[");
                     end_pos = k_string.find("]");
+
+                    // std::cout << k_string << std::endl;
+
                     k_string.replace(end_pos, 1, " ");
+
+                    // std::cout << k_string << std::endl;
+
                     k_string = k_string.substr(begin_pos + 1, end_pos - begin_pos);
-                    k_string.replace(k_string.find("\n"),6," ");             
-       
+
+                    // std::cout << k_string << std::endl;
+
+                    // Get rid of new lines
+                    pos = k_string.find("\n");
+                    while ( pos != std::string::npos){
+                        k_string.replace(pos,5," ");
+                        pos = k_string.find("\n");
+                    }
+
+                    // std::cout << k_string << ";" << std::endl;
+                    // exit(1);
+
+
                     delim = " ";
                     // number of kernel
                     for (int l = 0; l < number_of_kernels; l++){
@@ -102,7 +119,6 @@ ConvolutionLayer::ConvolutionLayer(size_t some_kernel_size, size_t some_kernel_d
                         k_string.erase(0, pos + delim.length());
                         parameters[l](i,j,k) = elem_f;
                     }
-                    std::cout << std::endl;
                 }
             }
         }
@@ -182,9 +198,9 @@ Tensor ConvolutionLayer::feedForward(Tensor& input)
             for (int j = 0; j < output_size; j++){
 
                 if (activation == "None"){
-                    layer_output(i,j,nk) = single_output(i,j,0);
+                    layer_output(i,j,nk) = single_output(i,j);
                 } else if (activation == "ReLu"){
-                    layer_output(i,j,nk) = std::max(single_output(i,j,0),0.0f);
+                    layer_output(i,j,nk) = std::max(single_output(i,j),0.0f);
                 }
             }
         }
