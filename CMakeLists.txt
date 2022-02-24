@@ -1,9 +1,19 @@
-cmake_minimum_required(VERSION 3.1)
-project(GPU_project)
-
-set(CMAKE_GXX_FLAGS "-Wall -Wextra -Wconversion  -pedantic -std=gnu11")
+cmake_minimum_required(VERSION 3.8)
+project(GPU_project LANGUAGES C CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_GXX_FLAGS "-Wall -Wextra -Wconversion  -pedantic -std=g++17 -lstdc++fs")
 
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
-add_executable(main main.cpp Matrix.cpp Tensor.cpp PoolingLayer.cpp ConvolutionLayer.cpp FullyConnectedLayer.cpp SoftmaxLayer.cpp)
+add_executable(main main.cpp Matrix.cpp Tensor.cpp PoolingLayer.cpp ConvolutionLayer.cpp FullyConnectedLayer.cpp SoftmaxLayer.cpp GPUtilities.cuh GPUtilities.cu)
 target_link_libraries(main ${OpenCV_LIBS})
+
+# CUDA Libraries
+find_package(CUDA)
+if(CUDA_FOUND)
+    include_directories(${CUDA_INCLUDE_DIRS} )
+    enable_language(CUDA)
+else()
+    message("NO CUDA FOR UUUUU")
+endif()
+

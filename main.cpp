@@ -15,45 +15,9 @@
 
 int main()
 {
-    // std::default_random_engine generator;
-    // std::normal_distribution<float> distribution(0.0,2.0);
-
-    // Tensor my_tensor(3,2,3);
-
-    // my_tensor(0,0,0) = 1;
-    // my_tensor(0,1,0) = 2;
-    // my_tensor(1,0,0) = 5;
-    // my_tensor(1,1,0) = 7;
-    // my_tensor(2,0,0) = 9;
-    // my_tensor(2,1,0) = 3;
-    
-    // my_tensor(0,0,1) = 3;
-    // my_tensor(0,1,1) = 8;
-    // my_tensor(1,0,1) = 7;
-    // my_tensor(1,1,1) = 11;
-    // my_tensor(2,0,1) = 5;
-    // my_tensor(2,1,1) = 4;
-
-    // my_tensor(0,0,2) = 12;
-    // my_tensor(0,1,2) = 1;
-    // my_tensor(1,0,2) = 8.3;
-    // my_tensor(1,1,2) = 2;
-    // my_tensor(2,0,2) = 17;
-    // my_tensor(2,1,2) = 3;
-
-    // float* flat_tensor = new float[18];
-    // flat_tensor = my_tensor.flatten(flat_tensor,18);
-
-
-    // for (int i = 0; i < 18; i++){
-    //     std::cout << flat_tensor[i] << "; ";
-    // }
-    // std::cout << std::endl;
-
-    // std::cout << my_tensor << std::endl;
-
+    std::string path = "./cnn-weights-new/";
     // Defining architecture
-    ConvolutionLayer convLayer1(3,3,1,16,"ReLu","../cnn-weights/cnn-weights-conv2d.txt"); 
+    ConvolutionLayer convLayer1(3,3,1,16,"ReLu",path +" cnn-weights-conv2d.txt");
     std::cout << "hey1" << std::endl;
     // Output shape: (30, 30, 16)
 
@@ -62,7 +26,7 @@ int main()
 
 
 
-    ConvolutionLayer convLayer2(3,16,1,32,"ReLu","../cnn-weights/cnn-weights-conv2d_1.txt");
+    ConvolutionLayer convLayer2(3,16,1,32,"ReLu", path + "cnn-weights-conv2d_1.txt");
     // Output shape: (28, 28, 32)
     std::cout << "hey2" << std::endl;
 
@@ -70,11 +34,11 @@ int main()
     // Output shape: (14, 14, 32)
 
     // Flatten last output to (6272)
-    FullyConnectedLayer denseLayer(256,6272,"ReLu","../cnn-weights/cnn-weights-dense.txt");
+    FullyConnectedLayer denseLayer(256,6272,"ReLu",path + "cnn-weights-dense.txt");
     // Output shape: (256)
     std::cout << "hey3" << std::endl;
 
-    SoftmaxLayer denseSoftmaxLayer(10,256,"../cnn-weights/cnn-weights-dense_1.txt");
+    SoftmaxLayer denseSoftmaxLayer(10,256,path + "cnn-weights-dense_1.txt");
     // Output shape: (10)
     std::cout << "hey4" << std::endl;
 
@@ -97,7 +61,7 @@ int main()
     // image counter
     int counter = 0;
 
-    std::ifstream testSetFile("../cnn-weights/X-test.csv");
+    std::ifstream testSetFile(path + "X-test.csv");
     if (testSetFile.is_open()){
         // Getting entire string of file
         std::string str;
@@ -157,7 +121,7 @@ int main()
     }
 
     // Fetching true labels from csv
-    std::ifstream testLabels("../cnn-weights/Y-test.csv");
+    std::ifstream testLabels(path + "Y-test.csv");
     if (testLabels.is_open()){
         std::string str;
         while(std::getline(testLabels,str)){
@@ -237,3 +201,42 @@ int main()
     // std::string image_path = "../../cifar-10/images_batch_2/american_elk_s_000918.png";
     // cv::Mat img = cv::imread(image_path, cv::IMREAD_COLOR);
     // Tensor test_img = Tensor(img);
+
+
+
+// std::default_random_engine generator;
+// std::normal_distribution<float> distribution(0.0,2.0);
+
+// Tensor my_tensor(3,2,3);
+
+// my_tensor(0,0,0) = 1;
+// my_tensor(0,1,0) = 2;
+// my_tensor(1,0,0) = 5;
+// my_tensor(1,1,0) = 7;
+// my_tensor(2,0,0) = 9;
+// my_tensor(2,1,0) = 3;
+
+// my_tensor(0,0,1) = 3;
+// my_tensor(0,1,1) = 8;
+// my_tensor(1,0,1) = 7;
+// my_tensor(1,1,1) = 11;
+// my_tensor(2,0,1) = 5;
+// my_tensor(2,1,1) = 4;
+
+// my_tensor(0,0,2) = 12;
+// my_tensor(0,1,2) = 1;
+// my_tensor(1,0,2) = 8.3;
+// my_tensor(1,1,2) = 2;
+// my_tensor(2,0,2) = 17;
+// my_tensor(2,1,2) = 3;
+
+// float* flat_tensor = new float[18];
+// flat_tensor = my_tensor.flatten(flat_tensor,18);
+
+
+// for (int i = 0; i < 18; i++){
+//     std::cout << flat_tensor[i] << "; ";
+// }
+// std::cout << std::endl;
+
+// std::cout << my_tensor << std::endl;

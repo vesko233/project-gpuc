@@ -95,7 +95,16 @@ void SoftmaxLayer::feedForward(float* input_data, float* output_data, size_t inp
         std::cerr << "Output size of the layer must be equal to the initialized size!";
         throw("Invalid output size");
     }
+    bool useGPU = true;
+    if (useGPU)
+    {
+        runFeedForwardGPU(input_data, output_data);
+    }
+    else runFeedForwardCPU(input_data, output_data);
+}
 
+void SoftmaxLayer::runFeedForwardCPU(float* input_data, float* output_data)
+{
     // Multiplying input by weights and adding biases
     for (int i = 0; i < weights.get_rows(); i++){
         float temp = 0;
@@ -106,8 +115,17 @@ void SoftmaxLayer::feedForward(float* input_data, float* output_data, size_t inp
     }
 }
 
+void SoftmaxLayer::runFeedForwardGPU(float* input_data, float* output_data)
+{
+    unsigned int size = weights.get_rows()*weights.get_cols()*weights.get_layers();
+    float* flatten_weights;
+    weights.flatten(flatten_weights, size);
+    unsigned int N = weights.get_cols();
+    unsigned int M = weights.get_rows();
+    matvec_kernel_cuda(input_data,flatten_weights, output_data, N, M);
+}
 
-// Softmax activation funciton
+// Softmax activation function
 // Input data should have size = number of neurons ( = z^L)
 // Output data should have size = number of neurons ( = a^L) 
 void SoftmaxLayer::softmaxActivate(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size)
@@ -154,3 +172,4 @@ float* SoftmaxLayer::backpropagation(float* delta_this, float* labels, const flo
 
     return delta_this;
 }
+
