@@ -85,7 +85,7 @@ SoftmaxLayer::SoftmaxLayer(size_t number_of_neurons, size_t previous_layer_dimen
 }
 
 
-float* SoftmaxLayer::feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size)
+void SoftmaxLayer::feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size)
 {
     if (input_data_size != weights.get_cols()){
         std::cerr << "Input size of the layer must be equal to the initialized size!";
@@ -104,14 +104,14 @@ float* SoftmaxLayer::feedForward(float* input_data, float* output_data, size_t i
         }
         output_data[i] = temp + biases[i];
     }
-    return output_data;
+    // return output_data;
 }
 
 
 // Softmax activation funciton
 // Input data should have size = number of neurons ( = z^L)
 // Output data should have size = number of neurons ( = a^L) 
-float* SoftmaxLayer::softmaxActivate(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size)
+void SoftmaxLayer::softmaxActivate(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size)
 {
     if (input_data_size != output_data_size){
         std::cerr << "Activation function dimensions do not match!";
@@ -129,7 +129,7 @@ float* SoftmaxLayer::softmaxActivate(float* input_data, float* output_data, size
         output_data[i] = std::exp(input_data[i])/exp_sum;
     }
 
-    return output_data;
+    // return output_data;
 }
 
 

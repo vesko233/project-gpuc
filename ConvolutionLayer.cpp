@@ -153,11 +153,12 @@ Tensor ConvolutionLayer::convolution(Tensor& image, Tensor& kernel, const size_t
     // iterate over all output pixels of the image
     int image_size = image.get_rows();
     int offset = (kernel_size - 1)/2;
+
     for (int x = 0; x < output_size; x++){
         for (int y = 0; y < output_size; y++){
 
             // Compute convolution result for each pixel
-            int res = 0;
+            float res = 0;
             // iterate over layers
             for (int k = 0; k < kernel.get_layers(); k++){
                 // 2D convolution for each layer
@@ -206,5 +207,6 @@ Tensor ConvolutionLayer::feedForward(Tensor& input)
         }
     }
     return layer_output;
+
 }
 

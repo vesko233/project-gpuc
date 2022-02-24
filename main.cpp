@@ -12,12 +12,55 @@
 #include "SoftmaxLayer.h"
 
 
+
 int main()
 {
+    // std::default_random_engine generator;
+    // std::normal_distribution<float> distribution(0.0,2.0);
+
+    // Tensor my_tensor(3,2,3);
+
+    // my_tensor(0,0,0) = 1;
+    // my_tensor(0,1,0) = 2;
+    // my_tensor(1,0,0) = 5;
+    // my_tensor(1,1,0) = 7;
+    // my_tensor(2,0,0) = 9;
+    // my_tensor(2,1,0) = 3;
+    
+    // my_tensor(0,0,1) = 3;
+    // my_tensor(0,1,1) = 8;
+    // my_tensor(1,0,1) = 7;
+    // my_tensor(1,1,1) = 11;
+    // my_tensor(2,0,1) = 5;
+    // my_tensor(2,1,1) = 4;
+
+    // my_tensor(0,0,2) = 12;
+    // my_tensor(0,1,2) = 1;
+    // my_tensor(1,0,2) = 8.3;
+    // my_tensor(1,1,2) = 2;
+    // my_tensor(2,0,2) = 17;
+    // my_tensor(2,1,2) = 3;
+
+    // float* flat_tensor = new float[18];
+    // flat_tensor = my_tensor.flatten(flat_tensor,18);
+
+
+    // for (int i = 0; i < 18; i++){
+    //     std::cout << flat_tensor[i] << "; ";
+    // }
+    // std::cout << std::endl;
+
+    // std::cout << my_tensor << std::endl;
+
     // Defining architecture
     ConvolutionLayer convLayer1(3,3,1,16,"ReLu","../cnn-weights/cnn-weights-conv2d.txt"); 
     std::cout << "hey1" << std::endl;
     // Output shape: (30, 30, 16)
+
+
+    // std::cout << convLayer1.parameters << std::endl
+
+
 
     ConvolutionLayer convLayer2(3,16,1,32,"ReLu","../cnn-weights/cnn-weights-conv2d_1.txt");
     // Output shape: (28, 28, 32)
@@ -37,15 +80,19 @@ int main()
 
     // Allocating memory for needed arrays during feed forward of neural network
     float* output_flat = new float[6272];
+
     float* dense_layer_output = new float[256];
+    float* dense_layer_output_activated = new float[256];
+    
     float* softamx_layer_output = new float[10];
+    float* softamx_layer_output_activated = new float[10];
+
+    // Allocate memory for image array conainer to read from csv file
+    float* image_array = new float[3*1024];
 
     // Allocating memory for array containing class predictions
     int* predicted_classes = new int[10000];
     int* true_classes = new int[10000];
-
-    // Allocate memory for image array conainer to read from csv file
-    float* image_array = new float[3*1024];
 
     // image counter
     int counter = 0;
@@ -75,7 +122,7 @@ int main()
 
             // pass to 1st conv layer
             Tensor output = convLayer1.feedForward(input_image);
-            
+
             // pass to 2nd conv layer
             output = convLayer2.feedForward(output);
 
@@ -83,18 +130,29 @@ int main()
             output = poolLayer.feedForward(output);
 
             // Flatten output
-            output_flat = output.flatten(output_flat,6272);
+            output.flatten(output_flat,6272);
 
             // pass to dense fully connected layer
-            dense_layer_output = denseLayer.feedForward(output_flat,dense_layer_output,6272,256);
+            denseLayer.feedForward(output_flat,dense_layer_output,6272,256);
+            denseLayer.activate(dense_layer_output,dense_layer_output_activated,256,256);
 
             // pass to softmax layer
-            softamx_layer_output = denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10);
+            denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10);
+            denseSoftmaxLayer.softmaxActivate(softamx_layer_output,softamx_layer_output_activated,10,10);
+
+            // for (int i = 0; i < 10; i++){
+            //     std::cout << softamx_layer_output_activated[i] << "; ";
+            // }     
 
             std::cout << "image " << counter + 1 << " classified." << std::endl;
 
-            predicted_classes[counter] = std::max_element(softamx_layer_output,softamx_layer_output+10) - softamx_layer_output;
+            predicted_classes[counter] = std::max_element(softamx_layer_output_activated,softamx_layer_output_activated+10) - softamx_layer_output_activated;
+            std::cout << predicted_classes[counter] << std::endl;
             counter++;
+
+            if (counter == 10){
+                exit(1);
+            }
         }
     }
 
@@ -131,8 +189,20 @@ int main()
     delete[] image_array;
     delete[] output_flat;
     delete[] dense_layer_output;
+    delete[] dense_layer_output_activated;
     delete[] softamx_layer_output;
+    delete[] softamx_layer_output_activated;
 }
+
+
+
+
+
+
+
+
+
+
 
     // ConvolutionLayer ConLayer1;
     // PoolingLayer PolLayer;

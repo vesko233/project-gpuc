@@ -67,5 +67,5 @@ class Tensor
 	Tensor operator*(const Tensor& some_tensor);
 	Tensor hadamard(const Tensor& some_tensor);
 	Tensor transpose();
-	float* flatten(float* flat, const size_t& flat_size);
+	void flatten(float* flat, const size_t& flat_size);
 };

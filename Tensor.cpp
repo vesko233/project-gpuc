@@ -99,7 +99,7 @@ size_t Tensor::get_layers() const
 size_t Tensor::index(size_t n_x, size_t n_y, size_t n_z) const
 {
 	if (n_x >= 0 && n_x < rows && n_y >= 0 && n_y < cols && n_z >= 0 && n_z < layers) {
-        return n_x + n_y*rows + n_z*rows*cols;
+        return n_y + n_x*cols + n_z*rows*cols;
 	} else {
 		std::cerr << "Element out of range! \n";
 		std::cerr << "At position: n_x = " << n_x << ", n_y = " << n_y << ", n_z = " << n_z << std::endl;
@@ -220,7 +220,7 @@ Tensor Tensor::transpose()
 } 
 
 // Flatten tensor(Return tensor data)
-float* Tensor::flatten(float* flat, const size_t& flat_size)
+void Tensor::flatten(float* flat, const size_t& flat_size)
 {
 	if (flat_size != size){
 		std::cerr << "Output array for flattened tensor is different than size of Tensor data!";
@@ -229,5 +229,5 @@ float* Tensor::flatten(float* flat, const size_t& flat_size)
 	for (int i = 0; i < flat_size; i++){
 		flat[i] = tensor_data[i];
 	}
-	return flat;
+	// return flat;
 }

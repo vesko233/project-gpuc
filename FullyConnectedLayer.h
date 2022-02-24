@@ -20,8 +20,8 @@ class FullyConnectedLayer
         }
 
         // Feedforward
-        float* feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size);
-        float* activate(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size);
+        void feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size);
+        void activate(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size);
 
         // Backpropagation
         float* backpropagation(float* delta_next, float* delta_this, const float& learning_rate, Tensor& w_next, float* z_this, float* a_prev);

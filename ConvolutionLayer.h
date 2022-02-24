@@ -2,7 +2,7 @@
 
 class ConvolutionLayer
 {
-    private:
+    public:
         // Parameter 
         std::vector<Tensor> parameters;
         float* biases;
@@ -12,7 +12,6 @@ class ConvolutionLayer
         size_t number_of_kernels{0};
         std::string activation{""};
 
-    public:
         // Default constructor
         ConvolutionLayer() = default;
 
