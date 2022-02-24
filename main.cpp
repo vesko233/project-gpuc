@@ -35,7 +35,6 @@ int main()
     // Output shape: (10)
     std::cout << "hey4" << std::endl;
 
-
     // Allocating memory for needed arrays during feed forward of neural network
     float* output_flat = new float[6272];
     float* dense_layer_output = new float[256];
@@ -51,11 +50,10 @@ int main()
     // image counter
     int counter = 0;
 
-    std::ifstream testSetFile("../../cifar-10/test.csv");
+    std::ifstream testSetFile("../cnn-weights/X-test.csv");
     if (testSetFile.is_open()){
         // Getting entire string of file
         std::string str;
-        std::getline(testSetFile,str); // Skip first line
 
         // Getting each line of file
         while(std::getline(testSetFile,str)){
@@ -136,12 +134,6 @@ int main()
     delete[] softamx_layer_output;
 }
 
-
-
-
-
-
-
     // ConvolutionLayer ConLayer1;
     // PoolingLayer PolLayer;
     // ConvolutionLayer ConLayer2;
@@ -170,12 +162,6 @@ int main()
     // return 0;
 
     ///////////////////////////////////////////////////
-
-
-
-
-
-
 
     // // Getting a test image
     // std::string image_path = "../../cifar-10/images_batch_2/american_elk_s_000918.png";
