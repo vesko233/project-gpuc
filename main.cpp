@@ -15,9 +15,9 @@
 
 int main()
 {
-    std::string path = "./cnn-weights-new/";
+    std::string path = "../cnn-weights-new/";
     // Defining architecture
-    ConvolutionLayer convLayer1(3,3,1,16,"ReLu",path +" cnn-weights-conv2d.txt");
+    ConvolutionLayer convLayer1(3,3,1,16,"ReLu",path + "cnn-weights-conv2d.txt");
     std::cout << "hey1" << std::endl;
     // Output shape: (30, 30, 16)
 

@@ -1,5 +1,8 @@
 #include "SoftmaxLayer.h"
 
+void matvec_kernel_cuda(float* a, float* b, float* c, unsigned int N, unsigned int M)
+{std::cout << "OOOOOOO";}
+
 SoftmaxLayer::SoftmaxLayer(size_t number_of_neurons, size_t previous_layer_dimension, const std::string& filename)
 {
     if (number_of_neurons < 1 || previous_layer_dimension < 1){
@@ -95,7 +98,8 @@ void SoftmaxLayer::feedForward(float* input_data, float* output_data, size_t inp
         std::cerr << "Output size of the layer must be equal to the initialized size!";
         throw("Invalid output size");
     }
-    bool useGPU = true;
+    bool useGPU = false;
+    std::cout << "WE ARE BEFORE" << std::endl;
     if (useGPU)
     {
         runFeedForwardGPU(input_data, output_data);
@@ -117,6 +121,7 @@ void SoftmaxLayer::runFeedForwardCPU(float* input_data, float* output_data)
 
 void SoftmaxLayer::runFeedForwardGPU(float* input_data, float* output_data)
 {
+    std::cout << "runFeedForwardGPU" << std::endl;
     unsigned int size = weights.get_rows()*weights.get_cols()*weights.get_layers();
     float* flatten_weights;
     weights.flatten(flatten_weights, size);
@@ -124,6 +129,8 @@ void SoftmaxLayer::runFeedForwardGPU(float* input_data, float* output_data)
     unsigned int M = weights.get_rows();
     matvec_kernel_cuda(input_data,flatten_weights, output_data, N, M);
 }
+
+
 
 // Softmax activation function
 // Input data should have size = number of neurons ( = z^L)

@@ -1,4 +1,5 @@
 #include "Tensor.h"
+//#include "GPUtilities.cuh"
 
 class SoftmaxLayer
 {
@@ -21,7 +22,8 @@ class SoftmaxLayer
         // Feedforward 
         void feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size);
         void softmaxActivate(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size);
-
+        void runFeedForwardCPU(float* input_data, float* output_data);
+        void runFeedForwardGPU(float* input_data, float* output_data);
         // Backpropagation
         float* backpropagation(float* delta_this, float* labels, const float& learning_rate, float* z_this, float* a_this, float* a_prev);
 };

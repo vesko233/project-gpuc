@@ -1,4 +1,5 @@
 #include "GPUtilities.cuh"
+
 __global__
 void kernel(float *vec, float *mat, float *out, const unsigned int N, const unsigned int M)
 {
@@ -13,6 +14,7 @@ void kernel(float *vec, float *mat, float *out, const unsigned int N, const unsi
 
 void matvec_kernel_cuda(float* a, float* b, float* c, unsigned int N, unsigned int M)
 {
+    printf("\n\nStarting matvec_kernel_cuda...\n\n");
     float *dev_a, *dev_b, *dev_c;
     cudaMalloc((void**)&dev_a, sizeof(float)*N);
     cudaMalloc((void**)&dev_b, sizeof(float)*N*M);
