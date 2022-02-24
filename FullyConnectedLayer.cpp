@@ -128,7 +128,6 @@ void FullyConnectedLayer::feedForward(float* input_data, float* output_data, siz
         }
         output_data[i] = temp + biases[i];
     }
-    // return output_data;
 }
 
 // Activation function on layer output
@@ -148,7 +147,6 @@ void FullyConnectedLayer::activate(float* input_data, float* output_data, size_t
             output_data[i] = std::max(input_data[i],0.0f);
         }        
     }
-    // return output_data;
 }
 
 // Backpropagation of layer 

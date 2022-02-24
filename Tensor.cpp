@@ -229,5 +229,4 @@ void Tensor::flatten(float* flat, const size_t& flat_size)
 	for (int i = 0; i < flat_size; i++){
 		flat[i] = tensor_data[i];
 	}
-	// return flat;
 }

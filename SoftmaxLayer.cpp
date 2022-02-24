@@ -104,7 +104,6 @@ void SoftmaxLayer::feedForward(float* input_data, float* output_data, size_t inp
         }
         output_data[i] = temp + biases[i];
     }
-    // return output_data;
 }
 
 
@@ -128,8 +127,6 @@ void SoftmaxLayer::softmaxActivate(float* input_data, float* output_data, size_t
     for (int i = 0; i < input_data_size; i++){
         output_data[i] = std::exp(input_data[i])/exp_sum;
     }
-
-    // return output_data;
 }
 
 
