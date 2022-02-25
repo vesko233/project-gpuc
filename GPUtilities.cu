@@ -2,26 +2,25 @@
 #define THREADS_PER_BLOCK 512
 #define BLOCKSIZE 32
 
-__global__
-void kernel(float *vec, float *mat, float *b, float *out, const unsigned int N, const unsigned int M)
-{
-    int tid=threadIdx.x+blockIdx.x*blockDim.x;
-    __shared__ float* smat = new float[M];
-    for(int i=0; i<M; i++) smat[i] = mat[(i*N)+tid];
-
-    __shared__ float *sum = new float[N*M];
-    if(tid<N){
-        for(int i=0; i<M; i++)
-            sum[tid] = vec[tid]*smat[i];
-        __syncthreads();
-        for(int i=0; i<M; i++)
-            out[i] += sum[i*N + tid];
-        __syncthreads();
-        for(int i=0; i<M; i++)
-            out[i] += b[tid];
-    }
-
-}
+//__global__
+//void kernel(float *vec, float *mat, float *b, float *out, const unsigned int N, const unsigned int M)
+//{
+//    int tid=threadIdx.x+blockIdx.x*blockDim.x;
+//    __shared__ float* smat = new float[M];
+//    for(int i=0; i<M; i++) smat[i] = mat[(i*N)+tid];
+//
+//    __shared__ float *sum = new float[N*M];
+//    if(tid<N){
+//        for(int i=0; i<M; i++)
+//            sum[tid] = vec[tid]*smat[i];
+//        __syncthreads();
+//        for(int i=0; i<M; i++)
+//            out[i] += sum[i*N + tid];
+//        __syncthreads();
+//        for(int i=0; i<M; i++)
+//            out[i] += b[tid];
+//    }
+//}
 
 //SLOW BUT TESTED
 __global__
@@ -57,7 +56,7 @@ void matvec_kernel_cuda(float* input, float* matrix, float* biases, float* outpu
     dim3 dimBlock(BLOCKSIZE,BLOCKSIZE);
     if(N%max==0)BlocksPerGrid--;
     dim3 dimGrid(1,BlocksPerGrid);
-    kernelST<<<M,N>>>(dev_input, dev_matrix, dev_biases, dev_output, N, M);
+    kernelST<<<1,M>>>(dev_input, dev_matrix, dev_biases, dev_output, N, M);
     //kernel<<<1,M>>>(dev_input, dev_matrix, dev_biases, dev_output, N, M);
     //printf("error code: %s\n",cudaGetErrorString(cudaGetLastError()));
 
