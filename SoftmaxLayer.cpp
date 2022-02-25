@@ -1,8 +1,5 @@
 #include "SoftmaxLayer.h"
 
-void matvec_kernel_cuda(float* a, float* b, float* c, unsigned int N, unsigned int M)
-{std::cout << "OOOOOOO";}
-
 SoftmaxLayer::SoftmaxLayer(size_t number_of_neurons, size_t previous_layer_dimension, const std::string& filename)
 {
     if (number_of_neurons < 1 || previous_layer_dimension < 1){
@@ -88,7 +85,7 @@ SoftmaxLayer::SoftmaxLayer(size_t number_of_neurons, size_t previous_layer_dimen
 }
 
 
-void SoftmaxLayer::feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size)
+void SoftmaxLayer::feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size, bool useGPU)
 {
     if (input_data_size != weights.get_cols()){
         std::cerr << "Input size of the layer must be equal to the initialized size!";
@@ -98,8 +95,7 @@ void SoftmaxLayer::feedForward(float* input_data, float* output_data, size_t inp
         std::cerr << "Output size of the layer must be equal to the initialized size!";
         throw("Invalid output size");
     }
-    bool useGPU = false;
-    std::cout << "WE ARE BEFORE" << std::endl;
+
     if (useGPU)
     {
         runFeedForwardGPU(input_data, output_data);
@@ -121,13 +117,17 @@ void SoftmaxLayer::runFeedForwardCPU(float* input_data, float* output_data)
 
 void SoftmaxLayer::runFeedForwardGPU(float* input_data, float* output_data)
 {
-    std::cout << "runFeedForwardGPU" << std::endl;
     unsigned int size = weights.get_rows()*weights.get_cols()*weights.get_layers();
-    float* flatten_weights;
+    float* flatten_weights = new float [size];
     weights.flatten(flatten_weights, size);
     unsigned int N = weights.get_cols();
     unsigned int M = weights.get_rows();
-    matvec_kernel_cuda(input_data,flatten_weights, output_data, N, M);
+//    std::cout << "M = " << M << " N = " << N << std::endl;
+//    std::cout << "Before flatten = " << weights(3,5) << std::endl;
+//    std::cout << "After flatten3 = " << flatten_weights[3*weights.get_cols() + 5] << std::endl;
+//    std::cout << "biases = " << biases[4] << std::endl;
+    //matvec_kernel_cuda(input_data, flatten_weights, biases, output_data, N, M);
+    delete [] flatten_weights;
 }
 
 

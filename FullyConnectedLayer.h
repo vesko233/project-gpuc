@@ -1,11 +1,12 @@
 #include "Tensor.h"
+//#include "GPUtilities.cuh"
 
 class FullyConnectedLayer
 {
     public:
         Tensor weights;
         float* biases{nullptr};
-        std::string activation{""};
+        std::string activation;
 
         // Default constructor
         FullyConnectedLayer() = default;
@@ -16,13 +17,14 @@ class FullyConnectedLayer
         // Destructor
         ~FullyConnectedLayer()
         {
-            delete[] biases;
+            delete biases;
         }
 
         // Feedforward
-        void feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size);
+        void feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size, bool useGPU);
         void activate(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size);
-
+        void runFeedForwardCPU(float* input_data, float* output_data);
+        void runFeedForwardGPU(float* input_data, float* output_data);
         // Backpropagation
         float* backpropagation(float* delta_next, float* delta_this, const float& learning_rate, Tensor& w_next, float* z_this, float* a_prev);
 };

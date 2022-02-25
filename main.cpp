@@ -11,19 +11,14 @@
 #include "FullyConnectedLayer.h"
 #include "SoftmaxLayer.h"
 
-
-
 int main()
 {
     std::string path = "../cnn-weights-new/";
+    bool useGPU = false;
     // Defining architecture
     ConvolutionLayer convLayer1(3,3,1,16,"ReLu",path + "cnn-weights-conv2d.txt");
-    std::cout << "hey1" << std::endl;
     // Output shape: (30, 30, 16)
-
-
-    // std::cout << convLayer1.parameters << std::endl
-
+    std::cout << "hey1" << std::endl;
 
 
     ConvolutionLayer convLayer2(3,16,1,32,"ReLu", path + "cnn-weights-conv2d_1.txt");
@@ -51,7 +46,7 @@ int main()
     float* softamx_layer_output = new float[10];
     float* softamx_layer_output_activated = new float[10];
 
-    // Allocate memory for image array conainer to read from csv file
+    // Allocate memory for image array container to read from csv file
     float* image_array = new float[3*1024];
 
     // Allocating memory for array containing class predictions
@@ -65,6 +60,9 @@ int main()
     if (testSetFile.is_open()){
         // Getting entire string of file
         std::string str;
+
+        std::chrono::time_point<std::chrono::system_clock> start, end;
+        start = std::chrono::system_clock::now();
 
         // Getting each line of file
         while(std::getline(testSetFile,str)){
@@ -80,6 +78,7 @@ int main()
                 image_array[i] = elem_f;
                 i++;
             }
+
 
             // Making a Tensor object from extracted image array
             Tensor input_image(image_array,32,32,3);
@@ -97,11 +96,11 @@ int main()
             output.flatten(output_flat,6272);
 
             // pass to dense fully connected layer
-            denseLayer.feedForward(output_flat,dense_layer_output,6272,256);
+            denseLayer.feedForward(output_flat,dense_layer_output,6272,256, useGPU);
             denseLayer.activate(dense_layer_output,dense_layer_output_activated,256,256);
 
             // pass to softmax layer
-            denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10);
+            denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10, useGPU);
             denseSoftmaxLayer.softmaxActivate(softamx_layer_output,softamx_layer_output_activated,10,10);
 
             // for (int i = 0; i < 10; i++){
@@ -115,9 +114,13 @@ int main()
             counter++;
 
             if (counter == 10){
+                end = std::chrono::system_clock::now();
+                std::chrono::duration<double> elapsed_seconds = end-start;
+                std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
                 exit(1);
             }
         }
+
     }
 
     // Fetching true labels from csv

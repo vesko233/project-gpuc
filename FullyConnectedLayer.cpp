@@ -109,7 +109,7 @@ FullyConnectedLayer::FullyConnectedLayer(size_t number_of_neurons, size_t previo
 // Input data is a^(l-1), output data is z^l
 // Input data should have size = weights.cols !
 // Output data should have size = weights.rows !
-void FullyConnectedLayer::feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size)
+void FullyConnectedLayer::feedForward(float* input_data, float* output_data, size_t input_data_size, size_t output_data_size, bool useGPU)
 {
     if (input_data_size != weights.get_cols()){
         std::cerr << "Input size of the layer must be equal to the initialized size!";
@@ -120,6 +120,15 @@ void FullyConnectedLayer::feedForward(float* input_data, float* output_data, siz
         throw("Invalid output size");
     }
 
+    if (useGPU)
+    {
+        runFeedForwardGPU(input_data, output_data);
+    }
+    else runFeedForwardCPU(input_data, output_data);
+}
+
+void FullyConnectedLayer::runFeedForwardCPU(float* input_data, float* output_data)
+{
     // Multiplying input by weights and adding biases
     for (int i = 0; i < weights.get_rows(); i++){
         float temp = 0;
@@ -128,6 +137,18 @@ void FullyConnectedLayer::feedForward(float* input_data, float* output_data, siz
         }
         output_data[i] = temp + biases[i];
     }
+}
+
+void FullyConnectedLayer::runFeedForwardGPU(float* input_data, float* output_data)
+{
+    unsigned int size = weights.get_rows()*weights.get_cols()*weights.get_layers();
+    float* flatten_weights = new float [size];
+    weights.flatten(flatten_weights, size);
+    unsigned int N = weights.get_cols();
+    unsigned int M = weights.get_rows();
+    std::cout << "M = " << M << " N = " << N << std::endl;
+    matvec_kernel_cuda(input_data, flatten_weights, biases, output_data, N, M);
+    delete [] flatten_weights;
 }
 
 // Activation function on layer output
