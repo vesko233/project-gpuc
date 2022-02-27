@@ -14,12 +14,18 @@
 #include "GPUConvolution.cuh"
 #include <numeric>
 
+double calculateMean(std::vector<double> &vec){
+    double sum = std::accumulate(vec.begin(), vec.end(), 0.0);
+    return sum / vec.size();
+}
+
 int main()
 {
     bool useGPU = true;
     std::string path;
     if(useGPU) path = "./cnn-weights-new/";
     else path = "./cnn-weights-new/";
+    int exit_image = 500;
 
     // Defining CNN architecture
     //==================
@@ -69,6 +75,7 @@ int main()
     //==================
 
     int counter = 0;
+
     Tensor conv_layer1_output;
     Tensor conv_layer2_output;
     Tensor maxpool_layer_output;
@@ -80,7 +87,15 @@ int main()
     std::chrono::time_point<std::chrono::system_clock> start, end;
     start = std::chrono::system_clock::now();
     std::vector<double> times_per_image;
+    std::vector<double> times_per_conv1;
+    std::vector<double> times_per_conv2;
+    std::vector<double> times_per_gemv1;
+    std::vector<double> times_per_gemv2;
     times_per_image.reserve(10000);
+    times_per_conv1.reserve(10000);
+    times_per_conv2.reserve(10000);
+    times_per_gemv1.reserve(10000);
+    times_per_gemv2.reserve(10000);
 
     if (testSetFile.is_open()){
         // Getting entire string of file
@@ -104,14 +119,26 @@ int main()
 
 
             std::chrono::time_point<std::chrono::system_clock> start_per_image, end_per_image;
+            std::chrono::time_point<std::chrono::system_clock> start_per_layer, end_per_layer;
+            std::chrono::duration<double> elapsed_seconds_per_layer;
             start_per_image = std::chrono::system_clock::now();
             // Cuda code for GPU(parallel)
             if (useGPU){
                 // Pass image through first convolution layer
+
+                start_per_layer = std::chrono::system_clock::now();
                 conv_layer1_output = GPUconvolutuionFeedForward(convLayer1, input_image);
+                end_per_layer = std::chrono::system_clock::now();
+                elapsed_seconds_per_layer = end_per_layer-start_per_layer;
+                times_per_conv1.push_back(elapsed_seconds_per_layer.count());
 
                 // Pass to second convolution layer
+                start_per_layer = std::chrono::system_clock::now();
                 conv_layer2_output = GPUconvolutuionFeedForward(convLayer2, conv_layer1_output);
+                end_per_layer = std::chrono::system_clock::now();
+                elapsed_seconds_per_layer = end_per_layer-start_per_layer;
+                times_per_conv2.push_back(elapsed_seconds_per_layer.count());
+
 
                 // Pass to maxpool layer
                 maxpool_layer_output = poolLayer.feedForward(conv_layer2_output);
@@ -120,20 +147,36 @@ int main()
                 maxpool_layer_output.flatten(output_flat,6272);
 
                 // Pass to dense fully connected layer
+                start_per_layer = std::chrono::system_clock::now();
                 denseLayer.feedForward(output_flat,dense_layer_output,6272,256,useGPU);
+                end_per_layer = std::chrono::system_clock::now();
+                elapsed_seconds_per_layer = end_per_layer-start_per_layer;
+                times_per_gemv1.push_back(elapsed_seconds_per_layer.count());
                 denseLayer.activate(dense_layer_output,dense_layer_output_activated,256,256);
 
                 // Pass to softmax layer
+                start_per_layer = std::chrono::system_clock::now();
                 denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10,useGPU);
+                end_per_layer = std::chrono::system_clock::now();
+                elapsed_seconds_per_layer = end_per_layer-start_per_layer;
+                times_per_gemv2.push_back(elapsed_seconds_per_layer.count());
                 denseSoftmaxLayer.softmaxActivate(softamx_layer_output,softamx_layer_output_activated,10,10);
 
             // Code for CPU(serial)
             }else{
                 // Pass image through first convolution layer
+                start_per_layer = std::chrono::system_clock::now();
                 conv_layer1_output = convLayer1.feedForward(input_image);
+                end_per_layer = std::chrono::system_clock::now();
+                elapsed_seconds_per_layer = end_per_layer-start_per_layer;
+                times_per_conv1.push_back(elapsed_seconds_per_layer.count());
 
                 // Pass to second convolution layer
+                start_per_layer = std::chrono::system_clock::now();
                 conv_layer2_output = convLayer2.feedForward(conv_layer1_output);
+                end_per_layer = std::chrono::system_clock::now();
+                elapsed_seconds_per_layer = end_per_layer-start_per_layer;
+                times_per_conv2.push_back(elapsed_seconds_per_layer.count());
 
                 // Pass to maxpool layer
                 maxpool_layer_output = poolLayer.feedForward(conv_layer2_output);
@@ -142,11 +185,19 @@ int main()
                 maxpool_layer_output.flatten(output_flat,6272);
 
                 // Pass to dense fully connected layer
+                start_per_layer = std::chrono::system_clock::now();
                 denseLayer.feedForward(output_flat,dense_layer_output,6272,256,useGPU);
+                end_per_layer = std::chrono::system_clock::now();
+                elapsed_seconds_per_layer = end_per_layer-start_per_layer;
+                times_per_gemv1.push_back(elapsed_seconds_per_layer.count());
                 denseLayer.activate(dense_layer_output,dense_layer_output_activated,256,256);
 
                 // Pass to softmax layer
+                start_per_layer = std::chrono::system_clock::now();
                 denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10,useGPU);
+                end_per_layer = std::chrono::system_clock::now();
+                elapsed_seconds_per_layer = end_per_layer-start_per_layer;
+                times_per_gemv2.push_back(elapsed_seconds_per_layer.count());
                 denseSoftmaxLayer.softmaxActivate(softamx_layer_output,softamx_layer_output_activated,10,10);
             }
             end_per_image = std::chrono::system_clock::now();
@@ -164,11 +215,13 @@ int main()
             std::cout << predicted_classes[counter] << std::endl;
             counter++;
 
-            if (counter == 1000){
-                double sum = std::accumulate(times_per_image.begin(), times_per_image.end(), 0.0);
-                double mean = sum / times_per_image.size();
-                std::cout << "Average time per image: " << mean << "s\n";
-                exit(1);
+            if (counter == exit_image){
+                std::cout << "Average time per image: " << calculateMean(times_per_image) << "s\n";
+                std::cout << "Average time per conv1: " << calculateMean(times_per_conv1) << "s\n";
+                std::cout << "Average time per conv2: " << calculateMean(times_per_conv2) << "s\n";
+                std::cout << "Average time per gemv1: " << calculateMean(times_per_gemv1) << "s\n";
+                std::cout << "Average time per gemv2: " << calculateMean(times_per_gemv2) << "s\n";
+                exit(exit_image);
             }
 
 
