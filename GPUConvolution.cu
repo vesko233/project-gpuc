@@ -1,6 +1,6 @@
 #include "GPUConvolution.cuh"
   
-Tensor GPUconvolutuionFeedForward(ConvolutionLayer conv_layer, Tensor& input)
+Tensor GPUconvolutuionFeedForward(ConvolutionLayer& conv_layer, Tensor& input)
 {
     size_t output_size = (input.get_rows() - conv_layer.kernel_size)/conv_layer.stride + 1;
 

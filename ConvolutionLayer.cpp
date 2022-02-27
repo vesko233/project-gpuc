@@ -169,6 +169,7 @@ Tensor ConvolutionLayer::feedForward(Tensor& input)
     // Check if the image depth is the same as the kernel depth
     if (input.get_layers() != kernel_depth){
         std::cerr << "Input depth is not equal to the kernel depth!";
+        std::cerr << "Where kernel_depth = " << kernel_depth << " and input.get_layers() = " << input.get_layers();
         throw("Invalid dimensions!");
     }
 

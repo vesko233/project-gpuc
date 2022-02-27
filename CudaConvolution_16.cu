@@ -21,16 +21,16 @@ __global__ void convolution2D_kernel_16(float* d_image, float* d_filter, float* 
 
     __syncthreads();
 
-    float Res = 0;
+    float Res = 0.0f;
     if (threadIdx.y < output_size && threadIdx.x < output_size){
         // Each thread performing convolution with filter
         for (int i = 0; i < FILTER_SIZE_1; i++){
             for (int j = 0; j < FILTER_SIZE_1; j++){
-                Res += shared_image[threadIdx.y + i][threadIdx.x + j]*shared_filter[i][j];
+                Res += shared_image[threadIdx.x + i][threadIdx.y + j]*shared_filter[i][j];
             }
         }
         // Adding result to output. Here, we are using atomic add to avoid errors
-        atomicAdd(&(d_output[threadIdx.y + output_size*threadIdx.x + blockIdx.x*output_size*output_size]),Res);
+        atomicAdd(&(d_output[threadIdx.x + output_size*threadIdx.y + blockIdx.x*output_size*output_size]), Res);
     }
 
 }
@@ -44,7 +44,7 @@ void convolution_2D_16(float* image, float* filter, float* output)
     // 32 x 32 block
     dim3 dimBlock(BLOCK_SIZE_1,BLOCK_SIZE_1,1);
 
-    // 3 x 16 grid
+    // 16 x 3 grid
     dim3 dimGrid(FILTERS_NUM_1,DEPTH_1,1);
 
     // Declaring device copies of data
@@ -56,6 +56,8 @@ void convolution_2D_16(float* image, float* filter, float* output)
     int image_memory_size = BLOCK_SIZE_1*BLOCK_SIZE_1*DEPTH_1*sizeof(float); // 32 x 32 x 3 x (float)
     int filter_memory_size = FILTER_SIZE_1*FILTER_SIZE_1*DEPTH_1*FILTERS_NUM_1*sizeof(float); // 3 x 3 x 3 x 16 x (float)
     int output_memory_size = (BLOCK_SIZE_1 - FILTER_SIZE_1 + 1)*(BLOCK_SIZE_1 - FILTER_SIZE_1 + 1)*FILTERS_NUM_1*sizeof(float); // 30 x 30 x 16 x (float)
+
+    for(int i = 0; i < output_memory_size/sizeof(float); ++i) output[i] = 0.0f;
 
     // Allocating memory on device
     cudaMalloc((void**) &d_image, image_memory_size);
