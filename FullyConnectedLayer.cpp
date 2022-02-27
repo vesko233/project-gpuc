@@ -134,19 +134,8 @@ void FullyConnectedLayer::runFeedForwardCPU(float* input_data, float* output_dat
 
 void FullyConnectedLayer::runFeedForwardGPU(float* input_data, float* output_data)
 {
-    unsigned int size = weights.get_rows()*weights.get_cols()*weights.get_layers();
-    float* flatten_weights = new float [size];
-    weights.flatten(flatten_weights, size);
-    unsigned int N = weights.get_cols();
-    unsigned int M = weights.get_rows();
-    matvec_kernel_cuda(input_data, flatten_weights, biases, output_data, N, M);
-    delete [] flatten_weights;
-}
-
-void FullyConnectedLayer::runFeedForwardGPU(float* input_data, float* output_data)
-{
     unsigned int size = weights.get_rows()*weights.get_cols();
-    float* flatten_weights = new float[size];
+    float* flatten_weights = new float [size];
     weights.flatten(flatten_weights, size);
     unsigned int N = weights.get_cols();
     unsigned int M = weights.get_rows();

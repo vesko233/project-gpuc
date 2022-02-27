@@ -117,16 +117,12 @@ void SoftmaxLayer::runFeedForwardCPU(float* input_data, float* output_data)
 
 void SoftmaxLayer::runFeedForwardGPU(float* input_data, float* output_data)
 {
-    unsigned int size = weights.get_rows()*weights.get_cols()*weights.get_layers();
+    unsigned int size = weights.get_rows()*weights.get_cols();
     float* flatten_weights = new float [size];
     weights.flatten(flatten_weights, size);
     unsigned int N = weights.get_cols();
     unsigned int M = weights.get_rows();
-//    std::cout << "M = " << M << " N = " << N << std::endl;
-//    std::cout << "Before flatten = " << weights(3,5) << std::endl;
-//    std::cout << "After flatten3 = " << flatten_weights[3*weights.get_cols() + 5] << std::endl;
-//    std::cout << "biases = " << biases[4] << std::endl;
-    //matvec_kernel_cuda(input_data, flatten_weights, biases, output_data, N, M);
+    matvec_kernel_cuda(input_data, flatten_weights, biases, output_data, N, M);
     delete [] flatten_weights;
 }
 
@@ -152,21 +148,6 @@ void SoftmaxLayer::softmaxActivate(float* input_data, float* output_data, size_t
     for (int i = 0; i < input_data_size; i++){
         output_data[i] = std::exp(input_data[i])/exp_sum;
     }
-}
-
-void SoftmaxLayer::runFeedForwardGPU(float* input_data, float* output_data)
-{
-    unsigned int size = weights.get_rows()*weights.get_cols()*weights.get_layers();
-    float* flatten_weights = new float [size];
-    weights.flatten(flatten_weights, size);
-    unsigned int N = weights.get_cols();
-    unsigned int M = weights.get_rows();
-//    std::cout << "M = " << M << " N = " << N << std::endl;
-//    std::cout << "Before flatten = " << weights(3,5) << std::endl;
-//    std::cout << "After flatten3 = " << flatten_weights[3*weights.get_cols() + 5] << std::endl;
-//    std::cout << "biases = " << biases[4] << std::endl;
-    //matvec_kernel_cuda(input_data, flatten_weights, biases, output_data, N, M);
-    delete [] flatten_weights;
 }
 
 
