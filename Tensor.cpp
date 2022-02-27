@@ -72,7 +72,7 @@ Tensor::Tensor(float* image, size_t number_of_rows, size_t number_of_columns, si
     size = number_of_rows*number_of_columns*number_of_layers;
 	tensor_data = new float [size];	
 	for (size_t i = 0; i < size; i++) {
-		tensor_data[i] = image[i]/255.;
+		tensor_data[i] = image[i];
 	}    
 }
 

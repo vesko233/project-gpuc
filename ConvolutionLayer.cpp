@@ -87,16 +87,8 @@ ConvolutionLayer::ConvolutionLayer(size_t some_kernel_size, size_t some_kernel_d
                     // extracting layer string
                     begin_pos = k_string.find("[");
                     end_pos = k_string.find("]");
-
-                    // std::cout << k_string << std::endl;
-
                     k_string.replace(end_pos, 1, " ");
-
-                    // std::cout << k_string << std::endl;
-
                     k_string = k_string.substr(begin_pos + 1, end_pos - begin_pos);
-
-                    // std::cout << k_string << std::endl;
 
                     // Get rid of new lines
                     pos = k_string.find("\n");
@@ -104,10 +96,6 @@ ConvolutionLayer::ConvolutionLayer(size_t some_kernel_size, size_t some_kernel_d
                         k_string.replace(pos,5," ");
                         pos = k_string.find("\n");
                     }
-
-                    // std::cout << k_string << ";" << std::endl;
-                    // exit(1);
-
 
                     delim = " ";
                     // number of kernel
@@ -152,7 +140,6 @@ Tensor ConvolutionLayer::convolution(Tensor& image, Tensor& kernel, const size_t
     // Convolution
     // iterate over all output pixels of the image
     int image_size = image.get_rows();
-    int offset = (kernel_size - 1)/2;
 
     for (int x = 0; x < output_size; x++){
         for (int y = 0; y < output_size; y++){
@@ -199,14 +186,39 @@ Tensor ConvolutionLayer::feedForward(Tensor& input)
             for (int j = 0; j < output_size; j++){
 
                 if (activation == "None"){
-                    layer_output(i,j,nk) = single_output(i,j);
+                    layer_output(i,j,nk) = single_output(i,j) + biases[nk];
                 } else if (activation == "ReLu"){
-                    layer_output(i,j,nk) = std::max(single_output(i,j),0.0f);
+                    layer_output(i,j,nk) = std::max(single_output(i,j) + biases[nk],0.0f);
                 }
             }
         }
     }
-    return layer_output;
 
+    return layer_output;
 }
 
+// Method which fills an array flat_kernels with all kernels
+// It essentially flattens out the 4D tensor containing all kernels in this layer
+// The flattened array must have size: kernel_size*kernel_size*kernel_depth*number_of_kernels
+void ConvolutionLayer::flatten_kernels(float* flat_kernels, size_t flat_kernels_size)
+{
+    if (flat_kernels_size != kernel_size*kernel_size*kernel_depth*number_of_kernels){
+        std::cerr << "Invalid input size for flat kernel array";
+        throw("Invalid input size!");
+    }
+
+    size_t k_s = kernel_size*kernel_size*kernel_depth;
+    float* one_kernel_array = new float[k_s];
+
+    int j = 0;
+    // Converting weight parameters into array
+    for (auto &v : parameters){
+        v.flatten(one_kernel_array, k_s);
+        for (int i = 0; i < k_s; i++){
+            flat_kernels[k_s*j + i] = one_kernel_array[i];
+        }
+        j++;
+    }
+
+    delete[] one_kernel_array;
+}

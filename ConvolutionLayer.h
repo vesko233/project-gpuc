@@ -1,3 +1,4 @@
+#pragma once
 #include "Tensor.h"
 
 class ConvolutionLayer
@@ -29,4 +30,7 @@ class ConvolutionLayer
 
         // Feed forward
         Tensor feedForward(Tensor& input);
+
+        // Obtain flat array of all kernels
+        void flatten_kernels(float* flat_kernels, size_t flat_kernels_size);
 };

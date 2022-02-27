@@ -1,26 +1,25 @@
-#ifndef CUDA_CONVOLUTION_CUH
-#define CUDA_CONVOLUTION_CUH
-#include "Tensor.h"
+#ifndef CUDA_CONVOLUTION_16_CUH
+#define CUDA_CONVOLUTION_16_CUH
 #include <iostream>
 #include <cstdio>
 #include <cuda.h>
 #include <time.h>
 
-#define BLOCK_SIZE 32
-#define FILTER_SIZE 3
-#define FILTERS_NUM 16
-#define DEPTH 3
+#define BLOCK_SIZE_1 32
+#define FILTER_SIZE_1 3
+#define FILTERS_NUM_1 16
+#define DEPTH_1 3
 
 // GRID DIMENSIONS = 3 x 16
 // BLOCK DIMENSIONS = 32x32 = 1024
 // blockIdx.y in the kernel below refers to the layer of the input tensor and filter, i.e. the z dimension
-__global__ void convolution2D_kernel(float* d_image, float* d_filter, float* d_output); 
+__global__ void convolution2D_kernel_16(float* d_image, float* d_filter, float* d_output, size_t output_size); 
 
 
 // image = Flattened 3D tensor (32x32x3)
 // filter = Flattened 4D tensor (3x3x3x16)
 // output = Flattened 3D tensor (30x30x16)
-void convolution_2D(float* image, float* filter, float* output);
+void convolution_2D_16(float* image, float* filter, float* output);
 
 
 #endif
