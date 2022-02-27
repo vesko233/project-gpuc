@@ -12,15 +12,14 @@
 #include "SoftmaxLayer.h"
 #include "FullyConnectedLayer.h"
 #include "GPUConvolution.cuh"
+#include <numeric>
 
 int main()
 {
     bool useGPU = true;
     std::string path;
     if(useGPU) path = "./cnn-weights-new/";
-    else path = "../cnn-weights-new/";
-
-    clock_t start, end;
+    else path = "./cnn-weights-new/";
 
     // Defining CNN architecture
     //==================
@@ -70,9 +69,19 @@ int main()
     //==================
 
     int counter = 0;
+    Tensor conv_layer1_output;
+    Tensor conv_layer2_output;
+    Tensor maxpool_layer_output;
 
     // Open csv file with test data. The CNN will attempt to classify 10 000 32x32x3 images
     std::ifstream testSetFile(path + "X-test.csv");
+
+    // Timers for whole run of CNN
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    start = std::chrono::system_clock::now();
+    std::vector<double> times_per_image;
+    times_per_image.reserve(10000);
+
     if (testSetFile.is_open()){
         // Getting entire string of file
         std::string str;
@@ -94,58 +103,71 @@ int main()
             Tensor input_image(image_array,32,32,3);
 
 
+            std::chrono::time_point<std::chrono::system_clock> start_per_image, end_per_image;
+            start_per_image = std::chrono::system_clock::now();
             // Cuda code for GPU(parallel)
             if (useGPU){
                 // Pass image through first convolution layer
-                Tensor conv_layer1_output = GPUconvolutuionFeedForward(convLayer1, input_image);
-              
+                conv_layer1_output = GPUconvolutuionFeedForward(convLayer1, input_image);
+
                 // Pass to second convolution layer
-                Tensor conv_layer2_output = GPUconvolutuionFeedForward(convLayer2, conv_layer1_output);
+                conv_layer2_output = GPUconvolutuionFeedForward(convLayer2, conv_layer1_output);
 
                 // Pass to maxpool layer
-                Tensor maxpool_layer_output = poolLayer.feedForward(conv_layer2_output);
+                maxpool_layer_output = poolLayer.feedForward(conv_layer2_output);
 
                 // Flatten output
                 maxpool_layer_output.flatten(output_flat,6272);
 
                 // Pass to dense fully connected layer
-                denseLayer.feedForward(output_flat,dense_layer_output,6272,256,false); denseLayer.activate(dense_layer_output,dense_layer_output_activated,256,256);
+                denseLayer.feedForward(output_flat,dense_layer_output,6272,256,useGPU);
+                denseLayer.activate(dense_layer_output,dense_layer_output_activated,256,256);
 
                 // Pass to softmax layer
-                denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10,false); denseSoftmaxLayer.softmaxActivate(softamx_layer_output,softamx_layer_output_activated,10,10);
+                denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10,useGPU);
+                denseSoftmaxLayer.softmaxActivate(softamx_layer_output,softamx_layer_output_activated,10,10);
 
             // Code for CPU(serial)
             }else{
                 // Pass image through first convolution layer
-                Tensor conv_layer1_output = convLayer1.feedForward(input_image);
+                conv_layer1_output = convLayer1.feedForward(input_image);
 
                 // Pass to second convolution layer
-                Tensor conv_layer2_output = convLayer2.feedForward(conv_layer1_output);
+                conv_layer2_output = convLayer2.feedForward(conv_layer1_output);
 
                 // Pass to maxpool layer
-                Tensor maxpool_layer_output = poolLayer.feedForward(conv_layer2_output);
+                maxpool_layer_output = poolLayer.feedForward(conv_layer2_output);
 
                 // Flatten output
                 maxpool_layer_output.flatten(output_flat,6272);
 
                 // Pass to dense fully connected layer
-                denseLayer.feedForward(output_flat,dense_layer_output,6272,256,useGPU); denseLayer.activate(dense_layer_output,dense_layer_output_activated,256,256);
+                denseLayer.feedForward(output_flat,dense_layer_output,6272,256,useGPU);
+                denseLayer.activate(dense_layer_output,dense_layer_output_activated,256,256);
 
                 // Pass to softmax layer
-                denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10,useGPU); denseSoftmaxLayer.softmaxActivate(softamx_layer_output,softamx_layer_output_activated,10,10);
+                denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10,useGPU);
+                denseSoftmaxLayer.softmaxActivate(softamx_layer_output,softamx_layer_output_activated,10,10);
             }
+            end_per_image = std::chrono::system_clock::now();
+            std::chrono::duration<double> elapsed_seconds_per_image = end_per_image-start_per_image;
+            times_per_image.push_back(elapsed_seconds_per_image.count());
 
             for (int i = 0; i < 10; i++){
                 std::cout << softamx_layer_output_activated[i] << "; ";
-            }     
+            }
+            std::cout << std::endl;
 
-            std::cout << "image " << counter + 1 << " classified." << std::endl;
+            std::cout << "image " << counter + 1 << " classified as ";
 
             predicted_classes[counter] = std::max_element(softamx_layer_output_activated,softamx_layer_output_activated+10) - softamx_layer_output_activated;
             std::cout << predicted_classes[counter] << std::endl;
             counter++;
 
-            if (counter == 10){
+            if (counter == 1000){
+                double sum = std::accumulate(times_per_image.begin(), times_per_image.end(), 0.0);
+                double mean = sum / times_per_image.size();
+                std::cout << "Average time per image: " << mean << "s\n";
                 exit(1);
             }
 
@@ -161,7 +183,7 @@ int main()
     }
 
     // Fetching true labels from csv
-    std::ifstream testLabels("../cnn-weights/Y-test.csv");
+    std::ifstream testLabels(path + "Y-test.csv");
     if (testLabels.is_open()){
         std::string str;
         while(std::getline(testLabels,str)){
@@ -186,7 +208,12 @@ int main()
     }
     accuracy  = accuracy/10000;
     std::cout << "Accuracy for test set = " << accuracy*100 << "%" << std::endl;
-
+    end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end-start;
+    double sum = std::accumulate(times_per_image.begin(), times_per_image.end(), 0.0);
+    double mean = sum / times_per_image.size();
+    std::cout << "Average time per image: " << mean << "s\n";
+    std::cout << "Total elapsed time: " << elapsed_seconds.count() << "s\n";
 
 
     // Freeing allocated memory
