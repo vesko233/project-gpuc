@@ -1,5 +1,5 @@
 #include "Tensor.h"
-//#include "GPUtilities.cuh"
+#include "CudaGEMV.cuh"
 
 class FullyConnectedLayer
 {

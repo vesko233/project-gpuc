@@ -15,18 +15,21 @@
 
 int main()
 {
-    bool useGPU = false;
+    bool useGPU = true;
+    std::string path;
+    if(useGPU) path = "./cnn-weights-new/";
+    else path = "../cnn-weights-new/";
 
     clock_t start, end;
 
     // Defining CNN architecture
     //==================
     // First convolutional layer
-    ConvolutionLayer convLayer1(3,3,1,16,"ReLu","../cnn-weights/cnn-weights-conv2d.txt"); 
+    ConvolutionLayer convLayer1(3,3,1,16,"ReLu",path + "cnn-weights-conv2d.txt");
     // Output shape: (30, 30, 16)
 
     // Second convoloutional layer
-    ConvolutionLayer convLayer2(3,16,1,32,"ReLu","../cnn-weights/cnn-weights-conv2d_1.txt");
+    ConvolutionLayer convLayer2(3,16,1,32,"ReLu",path + "cnn-weights-conv2d_1.txt");
     // Output shape: (28, 28, 32)
 
     // Max pooling layer
@@ -36,11 +39,11 @@ int main()
     // Flatten last output to (6272) = 14*14*32
 
     // Dense layer
-    FullyConnectedLayer denseLayer(256,6272,"ReLu","../cnn-weights/cnn-weights-dense.txt");
+    FullyConnectedLayer denseLayer(256,6272,"ReLu",path + "cnn-weights-dense.txt");
     // Output shape: (256)
 
     // Final dense softmax layer
-    SoftmaxLayer denseSoftmaxLayer(10,256,"../cnn-weights/cnn-weights-dense_1.txt");
+    SoftmaxLayer denseSoftmaxLayer(10,256,path + "cnn-weights-dense_1.txt");
     // Output shape: (10)
     //==================
 
@@ -69,7 +72,7 @@ int main()
     int counter = 0;
 
     // Open csv file with test data. The CNN will attempt to classify 10 000 32x32x3 images
-    std::ifstream testSetFile("../cnn-weights/X-test.csv");
+    std::ifstream testSetFile(path + "X-test.csv");
     if (testSetFile.is_open()){
         // Getting entire string of file
         std::string str;

@@ -92,13 +92,6 @@ FullyConnectedLayer::FullyConnectedLayer(size_t number_of_neurons, size_t previo
             biases[i] = elem_f;
         }
     }
-
-    // std::cout << weights << std::endl;
-    // for (int i = 0; i < number_of_neurons; i++){
-    //     std::cout << biases[i] << "; ";
-    // }
-    // std::cout << std::endl;
-
     
     // Activation function
     activation = some_activation;
@@ -146,7 +139,17 @@ void FullyConnectedLayer::runFeedForwardGPU(float* input_data, float* output_dat
     weights.flatten(flatten_weights, size);
     unsigned int N = weights.get_cols();
     unsigned int M = weights.get_rows();
-    std::cout << "M = " << M << " N = " << N << std::endl;
+    matvec_kernel_cuda(input_data, flatten_weights, biases, output_data, N, M);
+    delete [] flatten_weights;
+}
+
+void FullyConnectedLayer::runFeedForwardGPU(float* input_data, float* output_data)
+{
+    unsigned int size = weights.get_rows()*weights.get_cols();
+    float* flatten_weights = new float[size];
+    weights.flatten(flatten_weights, size);
+    unsigned int N = weights.get_cols();
+    unsigned int M = weights.get_rows();
     matvec_kernel_cuda(input_data, flatten_weights, biases, output_data, N, M);
     delete [] flatten_weights;
 }
