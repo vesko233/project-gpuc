@@ -82,6 +82,10 @@ SoftmaxLayer::SoftmaxLayer(size_t number_of_neurons, size_t previous_layer_dimen
             biases[i] = elem_f;
         }
     }
+
+    unsigned int size = weights.get_rows()*weights.get_cols();
+    flatten_weights = new float [size];
+    weights.flatten(flatten_weights, size);
 }
 
 
@@ -117,13 +121,9 @@ void SoftmaxLayer::runFeedForwardCPU(float* input_data, float* output_data)
 
 void SoftmaxLayer::runFeedForwardGPU(float* input_data, float* output_data)
 {
-    unsigned int size = weights.get_rows()*weights.get_cols();
-    float* flatten_weights = new float [size];
-    weights.flatten(flatten_weights, size);
     unsigned int N = weights.get_cols();
     unsigned int M = weights.get_rows();
     matvec_kernel_cuda(input_data, flatten_weights, biases, output_data, N, M);
-    delete [] flatten_weights;
 }
 
 

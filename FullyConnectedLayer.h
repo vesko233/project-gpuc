@@ -5,6 +5,7 @@ class FullyConnectedLayer
 {
     public:
         Tensor weights;
+        float* flatten_weights;
         float* biases{nullptr};
         std::string activation;
 

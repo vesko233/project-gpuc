@@ -5,6 +5,7 @@ class SoftmaxLayer
 {
     public:
         Tensor weights;
+        float* flatten_weights;
         float* biases{nullptr};
 
         // Default constructor
