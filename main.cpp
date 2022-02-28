@@ -224,15 +224,6 @@ int main()
                 std::cout << "Average time per gemv2: " << calculateMean(times_per_gemv2) << "s\n";
                 exit(exit_image);
             }
-
-
-            // for (int i = 0; i < output2_C.get_rows(); i++){
-            //     for (int j = 0; j < output2_C.get_cols(); j++){
-            //         for (int k = 0; k < output2_C.get_layers(); k++){
-            //             std::cout << output2_nC(i,j,k) << " | " << output2_C(i,j,k) << std::endl;
-            //         }
-            //     }
-            // }
         }
     }
 
