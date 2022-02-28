@@ -1,6 +1,7 @@
 #include "CudaGEMV.cuh"
-#define THREADS_PER_BLOCK 64
-#define blockSize 64
+#define THREADS_PER_BLOCK 64 // For kernelRD
+//#define THREADS_PER_BLOCK 64 // For kernelST
+#define blockSize 64         // For kernelRD
 
 __device__ void warpReduce(volatile float *sdata, unsigned int tid)
 {
