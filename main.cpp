@@ -27,7 +27,6 @@ int main()
     else path = "./cnn-weights-new/";
     // If exit_image == -1 it means we run network on all test data, else - on the chosen part of it
     int exit_image = -1;
-    bool useGPUGEMV = true;
 
     // Defining CNN architecture
     //==================
@@ -188,7 +187,7 @@ int main()
 
                 // Pass to dense fully connected layer
                 start_per_layer = std::chrono::system_clock::now();
-                denseLayer.feedForward(output_flat,dense_layer_output,6272,256,useGPUGEMV);
+                denseLayer.feedForward(output_flat,dense_layer_output,6272,256,useGPU);
                 end_per_layer = std::chrono::system_clock::now();
                 elapsed_seconds_per_layer = end_per_layer-start_per_layer;
                 times_per_gemv1.push_back(elapsed_seconds_per_layer.count());
@@ -196,7 +195,7 @@ int main()
 
                 // Pass to softmax layer
                 start_per_layer = std::chrono::system_clock::now();
-                denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10,useGPUGEMV);
+                denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10,useGPU);
                 end_per_layer = std::chrono::system_clock::now();
                 elapsed_seconds_per_layer = end_per_layer-start_per_layer;
                 times_per_gemv2.push_back(elapsed_seconds_per_layer.count());
