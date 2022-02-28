@@ -1,28 +1,28 @@
 #include "CudaGEMV.cuh"
-#define THREADS_PER_BLOCK 512
-#define blockSize 512
-
-// Reduction kernel
+#define THREADS_PER_BLOCK 256
+#define blockSize 256
 
 __device__ void warpReduce(volatile float *sdata, unsigned int tid)
 {
     if (blockSize >= 64) sdata[tid] += sdata[tid + 32];
     if (blockSize >= 32) sdata[tid] += sdata[tid + 16];
     if (blockSize >= 16) sdata[tid] += sdata[tid + 8 ];
-    if (blockSize >= 8) sdata[tid]  += sdata[tid + 4 ];
-    if (blockSize >= 4) sdata[tid]  += sdata[tid + 2 ];
-    if (blockSize >= 2) sdata[tid]  += sdata[tid + 1 ];
+    if (blockSize >= 8 ) sdata[tid] += sdata[tid + 4 ];
+    if (blockSize >= 4 ) sdata[tid] += sdata[tid + 2 ];
+    if (blockSize >= 2 ) sdata[tid] += sdata[tid + 1 ];
 
 }
 
+// Reduction kernel
 __global__ void kernelRD(float *vec, float *mat, float *b, float *out, const unsigned int N, const unsigned int M)
 {
     extern __shared__ float sdata[];
     unsigned int tid = threadIdx.x;
     unsigned int i = blockIdx.x*(blockSize*2) + tid;
     unsigned int gridSize = blockSize*2*gridDim.x;
+    unsigned int tidd = threadIdx.x+blockIdx.x*blockDim.x;
     sdata[tid] = 0;
-    if(i < N)
+    if(tidd < N)
     {
         while (i < N) {
             sdata[tid] += vec[i]*mat[i + blockIdx.y*N] + vec[i + blockSize]*mat[i + blockSize + blockIdx.y*N];
