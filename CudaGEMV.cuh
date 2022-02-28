@@ -6,8 +6,9 @@
 #include <cuda_runtime.h>
 #include <time.h>
 
-__global__ void kernelST(float *vec, float *mat, float* biases, float *out, const unsigned int N, const unsigned int M);
-__global__ void kernelRD(float *vec, float *mat, float* biases, float *out, const unsigned int N, const unsigned int M);
+__device__ void warpReduce(volatile float *sdata, unsigned int tid);
+__global__ void kernelST(float *vec, float *mat, float *out, const unsigned int N, const unsigned int M);
+__global__ void kernelRD(float *vec, float *mat, float *out, const unsigned int N, const unsigned int M);
 
 void matvec_kernel_cuda(float* input, float* matrix, float* biases, float* output,  unsigned int N, unsigned int M);
 
