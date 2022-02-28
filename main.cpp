@@ -21,11 +21,13 @@ double calculateMean(std::vector<double> &vec){
 
 int main()
 {
-    bool useGPU = true;
+    bool useGPU = false;
     std::string path;
     if(useGPU) path = "./cnn-weights-new/";
     else path = "./cnn-weights-new/";
-    int exit_image = 500;
+    // If exit_image == -1 it means we run network on all test data, else - on the chosen part of it
+    int exit_image = -1;
+    bool useGPUGEMV = true;
 
     // Defining CNN architecture
     //==================
@@ -186,7 +188,7 @@ int main()
 
                 // Pass to dense fully connected layer
                 start_per_layer = std::chrono::system_clock::now();
-                denseLayer.feedForward(output_flat,dense_layer_output,6272,256,useGPU);
+                denseLayer.feedForward(output_flat,dense_layer_output,6272,256,useGPUGEMV);
                 end_per_layer = std::chrono::system_clock::now();
                 elapsed_seconds_per_layer = end_per_layer-start_per_layer;
                 times_per_gemv1.push_back(elapsed_seconds_per_layer.count());
@@ -194,7 +196,7 @@ int main()
 
                 // Pass to softmax layer
                 start_per_layer = std::chrono::system_clock::now();
-                denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10,useGPU);
+                denseSoftmaxLayer.feedForward(dense_layer_output,softamx_layer_output,256,10,useGPUGEMV);
                 end_per_layer = std::chrono::system_clock::now();
                 elapsed_seconds_per_layer = end_per_layer-start_per_layer;
                 times_per_gemv2.push_back(elapsed_seconds_per_layer.count());
@@ -261,12 +263,17 @@ int main()
     }
     accuracy  = accuracy/10000;
     std::cout << "Accuracy for test set = " << accuracy*100 << "%" << std::endl;
+
+    // Measure the times
     end = std::chrono::system_clock::now();
     std::chrono::duration<double> elapsed_seconds = end-start;
-    double sum = std::accumulate(times_per_image.begin(), times_per_image.end(), 0.0);
-    double mean = sum / times_per_image.size();
-    std::cout << "Average time per image: " << mean << "s\n";
-    std::cout << "Total elapsed time: " << elapsed_seconds.count() << "s\n";
+
+    std::cout << "Average time per image: " << calculateMean(times_per_image) << "s\n";
+    std::cout << "Average time per conv1: " << calculateMean(times_per_conv1) << "s\n";
+    std::cout << "Average time per conv2: " << calculateMean(times_per_conv2) << "s\n";
+    std::cout << "Average time per gemv1: " << calculateMean(times_per_gemv1) << "s\n";
+    std::cout << "Average time per gemv2: " << calculateMean(times_per_gemv2) << "s\n";
+    std::cout << "Total elapsed time:     " << elapsed_seconds.count() << "s\n";
 
 
     // Freeing allocated memory
