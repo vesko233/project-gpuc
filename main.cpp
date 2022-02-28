@@ -21,7 +21,7 @@ double calculateMean(std::vector<double> &vec){
 
 int main()
 {
-    bool useGPU = false;
+    bool useGPU = true;
     std::string path;
     if(useGPU) path = "./cnn-weights-new/";
     else path = "./cnn-weights-new/";
