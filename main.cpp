@@ -205,11 +205,6 @@ int main()
             std::chrono::duration<double> elapsed_seconds_per_image = end_per_image-start_per_image;
             times_per_image.push_back(elapsed_seconds_per_image.count());
 
-            for (int i = 0; i < 10; i++){
-                std::cout << softamx_layer_output_activated[i] << "; ";
-            }
-            std::cout << std::endl;
-
             std::cout << "image " << counter + 1 << " classified as ";
 
             predicted_classes[counter] = std::max_element(softamx_layer_output_activated,softamx_layer_output_activated+10) - softamx_layer_output_activated;
