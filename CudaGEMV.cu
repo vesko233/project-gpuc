@@ -1,5 +1,48 @@
 #include "CudaGEMV.cuh"
+#define THREADS_PER_BLOCK 256
+#define blockSize 256
 
+// Reduction kernel
+
+__device__ void warpReduce(volatile float *sdata, unsigned int tid)
+{
+    if (blockSize >= 64) sdata[tid] += sdata[tid + 32];
+    if (blockSize >= 32) sdata[tid] += sdata[tid + 16];
+    if (blockSize >= 16) sdata[tid] += sdata[tid + 8 ];
+    if (blockSize >= 8) sdata[tid]  += sdata[tid + 4 ];
+    if (blockSize >= 4) sdata[tid]  += sdata[tid + 2 ];
+    if (blockSize >= 2) sdata[tid]  += sdata[tid + 1 ];
+
+}
+
+__global__ void kernelRD(float *vec, float *mat, float *b, float *out, const unsigned int N, const unsigned int M)
+{
+    extern __shared__ float sdata[];
+    unsigned int tid = threadIdx.x;
+    unsigned int i = blockIdx.x*(blockSize*2) + tid;
+    unsigned int gridSize = blockSize*2*gridDim.x;
+    sdata[tid] = 0;
+    if(i < N)
+    {
+        while (i < N) {
+            sdata[tid] += vec[i]*mat[i + blockIdx.y*N] + vec[i + blockSize]*mat[i + blockSize + blockIdx.y*N];
+            i += gridSize;
+        }
+        __syncthreads();
+        if (blockSize >= 512) { if (tid < 256) { sdata[tid] += sdata[tid + 256]; } __syncthreads(); }
+        if (blockSize >= 256) { if (tid < 128) { sdata[tid] += sdata[tid + 128]; } __syncthreads(); }
+        if (blockSize >= 128) { if (tid < 64 ) { sdata[tid] += sdata[tid + 64 ]; } __syncthreads(); }
+        if (tid < 32) warpReduce(sdata, tid);
+        __syncthreads();
+        if (tid == 0)
+            atomicAdd(&out[blockIdx.y], sdata[0]);
+        __syncthreads();
+        if (tid == 0 && blockIdx.x == 0)
+            atomicAdd(&out[blockIdx.y], b[blockIdx.y]);
+    }
+}
+
+// Naive kernel
 __global__
 void kernelST(float *vec, float *mat, float *b, float *out, const unsigned int N, const unsigned int M)
 {
@@ -17,20 +60,31 @@ void matvec_kernel_cuda(float* input, float* matrix, float* biases, float* outpu
 {
     float *dev_input, *dev_matrix, *dev_biases, *dev_output;
 
-    cudaMalloc((void**)&dev_input, sizeof(float)*N);
+    cudaMalloc((void**)&dev_input , sizeof(float)*N  );
     cudaMalloc((void**)&dev_matrix, sizeof(float)*N*M);
-    cudaMalloc((void**)&dev_biases, sizeof(float)*M);
-    cudaMalloc((void**)&dev_output, sizeof(float)*M);
+    cudaMalloc((void**)&dev_biases, sizeof(float)*M  );
+    cudaMalloc((void**)&dev_output, sizeof(float)*M  );
 
-    cudaMemcpy(dev_input, input, sizeof(float)*N, cudaMemcpyHostToDevice);
+    for(int i = 0; i < M; ++i) output[i] = 0.0f;
+
+    cudaMemcpy(dev_input,  input,  sizeof(float)*N,   cudaMemcpyHostToDevice);
     cudaMemcpy(dev_matrix, matrix, sizeof(float)*N*M, cudaMemcpyHostToDevice);
-    cudaMemcpy(dev_biases, biases, sizeof(float)*M, cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_biases, biases, sizeof(float)*M,   cudaMemcpyHostToDevice);
+    cudaMemcpy(dev_output, output, sizeof(float)*M,   cudaMemcpyHostToDevice);
 
-    kernelST<<<1,M>>>(dev_input, dev_matrix, dev_biases, dev_output, N, M);
+    // Reduction kernel
+    // 1024 x 1 blocks
+    dim3 dimBlock(THREADS_PER_BLOCK, 1, 1);
+    // In M x N/1024+1 grid
+    dim3 dimGrid(N/THREADS_PER_BLOCK + 1, M, 1);
+    kernelRD<<<dimGrid, dimBlock, THREADS_PER_BLOCK*sizeof(float)>>>(dev_input, dev_matrix, dev_biases, dev_output, N, M);
+
+    // Naive kernel
+    // kernelST<<<1,M>>>(dev_input, dev_matrix, dev_biases, dev_output, N, M);
 
     cudaMemcpy(output, dev_output, sizeof(float)*M, cudaMemcpyDeviceToHost);
 
-    cudaFree(dev_input);
+    cudaFree(dev_input );
     cudaFree(dev_matrix);
     cudaFree(dev_biases);
     cudaFree(dev_output);
